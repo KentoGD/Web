@@ -1,0 +1,1017 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CuidApp - Plataforma de seguimiento e información para cuidadores de niños con discapacidad. Herramientas, noticias y control del bienestar." />
+  <title>CuidApp — Portal de Cuidadores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="brand-icon">💜</span>
+        <span class="brand-text">Cuid<strong>App</strong></span>
+      </div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+        <li><a href="#situacion" class="nav-link" data-section="situacion">Situación</a></li>
+        <li><a href="#herramientas" class="nav-link" data-section="herramientas">Herramientas</a></li>
+        <li><a href="#foro" class="nav-link" data-section="foro">Muro de Situaciones (Foro)</a></li>
+        <li><a href="#noticias" class="nav-link" data-section="noticias">Noticias</a></li>
+        <li><a href="#recursos" class="nav-link" data-section="recursos">Recursos</a></li>
+        <li><a href="#alertas" class="nav-link" data-section="alertas">Alertas</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn-notif" id="btnNotif" aria-label="Notificaciones">
+          🔔
+          <span class="notif-badge" id="notifBadge">3</span>
+        </button>
+        
+        <div id="userNavArea">
+          <!-- Populated by JS: Avatar or Login Btn -->
+          <button class="btn-secondary sm" id="btnOpenAuth" onclick="openAuthModal()">Iniciar Sesión / Registro</button>
+        </div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <!-- HERO -->
+  <section class="page-section hero" id="dashboard">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <span class="hero-tag">Portal de Cuidadores 2026</span>
+        <h1 class="hero-title">Apoyamos a quienes<br /><span class="gradient-text">dan todo por amor</span></h1>
+        <p class="hero-desc">Plataforma integral para el seguimiento, bienestar y apoyo de cuidadores de niños con discapacidad. Información actualizada, herramientas prácticas y comunidad.</p>
+        <div class="hero-cta">
+          <button class="btn-primary" id="btnRegistrar">Registrar Situación</button>
+          <button class="btn-secondary" id="btnVerGuia">Ver Guía Rápida</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat">
+            <span class="hstat-num" data-target="1247">0</span>
+            <span class="hstat-label">Cuidadores activos</span>
+          </div>
+          <div class="hstat-divider"></div>
+          <div class="hstat">
+            <span class="hstat-num" data-target="384">0</span>
+            <span class="hstat-label">Casos atendidos</span>
+          </div>
+          <div class="hstat-divider"></div>
+          <div class="hstat">
+            <span class="hstat-num" data-target="97">0</span>
+            <span class="hstat-label">% Satisfacción</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <!-- TARJETA DINÁMICA DE FAMILIA DESTACADA DEL FORO -->
+        <div class="featured-family-widget" id="featuredFamilyWidget">
+          <div class="ffw-badge">
+            <span class="ffw-pulse"></span>
+            💜 Familia que necesita tu apoyo
+          </div>
+          <div class="ffw-body" id="ffwBody">
+            <!-- Populated by JS from forum -->
+          </div>
+          <button class="ffw-cta" id="ffwCta">Ver su situación y apoyar →</button>
+        </div>
+      </div>
+    </div>
+    <!-- Scroll chevron hint -->
+    <div class="scroll-hint">
+      <span>Explorar</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- INDICADORES RÁPIDOS -->
+  <section class="page-section quick-indicators" id="situacion">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Estado en tiempo real</span>
+        <h2 class="section-title">Situación de los Cuidadores</h2>
+        <p class="section-sub">Indicadores clave actualizados sobre el bienestar, carga y necesidades de las familias cuidadoras</p>
+      </div>
+
+      <div class="indicators-grid">
+        <div class="indicator-card card-purple" id="card-burnout">
+          <div class="ind-header">
+            <span class="ind-icon">🧠</span>
+            <span class="ind-status status-alert">Atención</span>
+          </div>
+          <div class="ind-main">
+            <div class="ind-number">68<span class="ind-unit">%</span></div>
+            <div class="ind-label">Nivel de Agotamiento</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" data-val="68" style="--clr:#f59e0b"></div>
+          </div>
+          <div class="ind-footer">
+            <span class="trend trend-up">↑ 5% esta semana</span>
+            <button class="btn-micro" data-modal="burnout">Ver detalle</button>
+          </div>
+        </div>
+
+        <div class="indicator-card card-teal" id="card-apoyo">
+          <div class="ind-header">
+            <span class="ind-icon">🤝</span>
+            <span class="ind-status status-ok">Activo</span>
+          </div>
+          <div class="ind-main">
+            <div class="ind-number">312</div>
+            <div class="ind-label">Casos con Apoyo Activo</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" data-val="81" style="--clr:#10b981"></div>
+          </div>
+          <div class="ind-footer">
+            <span class="trend trend-up">↑ 12 nuevos</span>
+            <button class="btn-micro" data-modal="apoyo">Ver detalle</button>
+          </div>
+        </div>
+
+        <div class="indicator-card card-blue" id="card-servicios">
+          <div class="ind-header">
+            <span class="ind-icon">🏥</span>
+            <span class="ind-status status-warn">Pendiente</span>
+          </div>
+          <div class="ind-main">
+            <div class="ind-number">47</div>
+            <div class="ind-label">Sin acceso a servicios</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" data-val="37" style="--clr:#6366f1"></div>
+          </div>
+          <div class="ind-footer">
+            <span class="trend trend-down">↓ Mejorando</span>
+            <button class="btn-micro" data-modal="servicios">Ver detalle</button>
+          </div>
+        </div>
+
+        <div class="indicator-card card-pink" id="card-emocional">
+          <div class="ind-header">
+            <span class="ind-icon">💗</span>
+            <span class="ind-status status-ok">Monitoreado</span>
+          </div>
+          <div class="ind-main">
+            <div class="ind-number">84<span class="ind-unit">%</span></div>
+            <div class="ind-label">Salud Emocional Positiva</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" data-val="84" style="--clr:#ec4899"></div>
+          </div>
+          <div class="ind-footer">
+            <span class="trend trend-up">↑ Estable</span>
+            <button class="btn-micro" data-modal="emocional">Ver detalle</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAPA DE SITUACIÓN -->
+      <div class="situation-map-section">
+        <div class="map-card">
+          <div class="map-header">
+            <h3>🗺️ Distribución por Situación</h3>
+            <div class="map-legend">
+              <span class="leg-item"><span class="leg-dot dot-critical"></span>Crítica</span>
+              <span class="leg-item"><span class="leg-dot dot-medium"></span>Moderada</span>
+              <span class="leg-item"><span class="leg-dot dot-stable"></span>Estable</span>
+            </div>
+          </div>
+          <div class="situation-bars">
+            <div class="sit-bar-row">
+              <span class="sit-label">Carga severa de cuidado</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill critical" data-w="72"></div></div>
+              <span class="sit-pct">72%</span>
+            </div>
+            <div class="sit-bar-row">
+              <span class="sit-label">Falta de descanso nocturno</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill critical" data-w="65"></div></div>
+              <span class="sit-pct">65%</span>
+            </div>
+            <div class="sit-bar-row">
+              <span class="sit-label">Apoyo económico insuficiente</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill medium" data-w="58"></div></div>
+              <span class="sit-pct">58%</span>
+            </div>
+            <div class="sit-bar-row">
+              <span class="sit-label">Aislamiento social</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill medium" data-w="44"></div></div>
+              <span class="sit-pct">44%</span>
+            </div>
+            <div class="sit-bar-row">
+              <span class="sit-label">Acceso a terapias</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill stable" data-w="38"></div></div>
+              <span class="sit-pct">38%</span>
+            </div>
+            <div class="sit-bar-row">
+              <span class="sit-label">Coordinación sanitaria</span>
+              <div class="sit-bar-track"><div class="sit-bar-fill stable" data-w="21"></div></div>
+              <span class="sit-pct">21%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="donut-card">
+          <h3>Estado General</h3>
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 120 120">
+              <circle class="donut-bg" cx="60" cy="60" r="50" />
+              <circle class="donut-seg seg-critical" cx="60" cy="60" r="50" stroke-dasharray="94 220" stroke-dashoffset="0" />
+              <circle class="donut-seg seg-medium" cx="60" cy="60" r="50" stroke-dasharray="82 220" stroke-dashoffset="-94" />
+              <circle class="donut-seg seg-stable" cx="60" cy="60" r="50" stroke-dasharray="44 220" stroke-dashoffset="-176" />
+            </svg>
+            <div class="donut-center-text">
+              <span class="donut-total">384</span>
+              <span class="donut-sub">casos</span>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="d-leg"><span class="d-dot dc"></span><span>Crítica <strong>43%</strong></span></div>
+            <div class="d-leg"><span class="d-dot dm"></span><span>Moderada <strong>37%</strong></span></div>
+            <div class="d-leg"><span class="d-dot ds"></span><span>Estable <strong>20%</strong></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERRAMIENTAS -->
+  <section class="page-section tools-section" id="herramientas">
+    <div class="container">
+      <div class="section-header light">
+        <span class="section-tag tag-light">Herramientas Digitales</span>
+        <h2 class="section-title light">Tu caja de herramientas</h2>
+        <p class="section-sub light">Recursos interactivos para gestionar, planificar y registrar el cuidado</p>
+      </div>
+
+      <div class="tools-grid">
+        <!-- HERRAMIENTA 1: Registro de situación -->
+        <div class="tool-card" id="tool-registro">
+          <div class="tool-icon-wrap t-purple">
+            <span class="tool-icon">📝</span>
+          </div>
+          <h3 class="tool-name">Registro de Situación</h3>
+          <p class="tool-desc">Registra y actualiza el estado actual del niño y del cuidador. Seguimiento diario personalizado.</p>
+          <div class="tool-tags">
+            <span class="ttag">Diario</span>
+            <span class="ttag">Bienestar</span>
+          </div>
+          <button class="tool-btn" id="btnRegistroSituacion">Abrir herramienta →</button>
+        </div>
+
+        <!-- HERRAMIENTA 2: Planificador de cuidados -->
+        <div class="tool-card featured" id="tool-planificador">
+          <div class="featured-badge">⭐ Destacado</div>
+          <div class="tool-icon-wrap t-teal">
+            <span class="tool-icon">📅</span>
+          </div>
+          <h3 class="tool-name">Planificador de Cuidados</h3>
+          <p class="tool-desc">Organiza rutinas, medicaciones, citas y actividades terapéuticas en un calendario intuitivo.</p>
+          <div class="tool-tags">
+            <span class="ttag">Calendario</span>
+            <span class="ttag">Rutinas</span>
+            <span class="ttag">Terapias</span>
+          </div>
+          <button class="tool-btn" id="btnPlanificador">Abrir herramienta →</button>
+        </div>
+
+        <!-- HERRAMIENTA 3: Test de agotamiento -->
+        <div class="tool-card" id="tool-test">
+          <div class="tool-icon-wrap t-orange">
+            <span class="tool-icon">🧪</span>
+          </div>
+          <h3 class="tool-name">Test de Bienestar</h3>
+          <p class="tool-desc">Evalúa tu nivel de carga y agotamiento con el test validado de Zarit adaptado para cuidadores.</p>
+          <div class="tool-tags">
+            <span class="ttag">Evaluación</span>
+            <span class="ttag">Salud mental</span>
+          </div>
+          <button class="tool-btn" id="btnTest">Hacer test →</button>
+        </div>
+
+        <!-- HERRAMIENTA 4: Calculadora de derechos -->
+        <div class="tool-card" id="tool-derechos">
+          <div class="tool-icon-wrap t-blue">
+            <span class="tool-icon">⚖️</span>
+          </div>
+          <h3 class="tool-name">Calculadora de Derechos</h3>
+          <p class="tool-desc">Descubre a qué prestaciones, ayudas y derechos tiene acceso tu familia según su situación.</p>
+          <div class="tool-tags">
+            <span class="ttag">Prestaciones</span>
+            <span class="ttag">Legal</span>
+          </div>
+          <button class="tool-btn" id="btnDerechos">Calcular →</button>
+        </div>
+
+        <!-- HERRAMIENTA 5: Directorio de servicios -->
+        <div class="tool-card" id="tool-directorio">
+          <div class="tool-icon-wrap t-pink">
+            <span class="tool-icon">🗂️</span>
+          </div>
+          <h3 class="tool-name">Directorio de Servicios</h3>
+          <p class="tool-desc">Encuentra centros, terapeutas, asociaciones y servicios de apoyo cerca de tu ubicación.</p>
+          <div class="tool-tags">
+            <span class="ttag">Mapa</span>
+            <span class="ttag">Servicios</span>
+          </div>
+          <button class="tool-btn" id="btnDirectorio">Buscar →</button>
+        </div>
+
+        <!-- HERRAMIENTA 6: Comunicación -->
+        <div class="tool-card" id="tool-comunicacion">
+          <div class="tool-icon-wrap t-green">
+            <span class="tool-icon">💬</span>
+          </div>
+          <h3 class="tool-name">Centro de Mensajes</h3>
+          <p class="tool-desc">Comunícate con el equipo de apoyo, especialistas y otros cuidadores de la red.</p>
+          <div class="tool-tags">
+            <span class="ttag">Mensajería</span>
+            <span class="ttag">Comunidad</span>
+          </div>
+          <button class="tool-btn" id="btnComunicacion">Abrir →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULADORA DE DERECHOS MODAL -->
+  <div class="tool-panel" id="panelDerechos">
+    <div class="panel-overlay" id="panelDerechosOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelDerechosClose">✕</button>
+      <h2 class="panel-title">⚖️ Calculadora de Derechos y Ayudas</h2>
+      <p class="panel-sub">Descubre las prestaciones y derechos disponibles según tu situación</p>
+      
+      <div class="calc-step-wizard" id="calcWizard">
+        <!-- Paso 1 -->
+        <div class="calc-step active" data-step="1">
+          <h3>1. Grado de Discapacidad / Dependencia</h3>
+          <div class="reg-group">
+            <label class="reg-label">¿Tiene reconocimiento oficial de grado de discapacidad?</label>
+            <select class="planner-select full-w" id="calcDiscapacidad">
+              <option value="none">Sin reconocimiento aún / En trámite</option>
+              <option value="33-64">Entre 33% y 64%</option>
+              <option value="65-74">Entre 65% y 74%</option>
+              <option value="75+">75% o superior (Con baremo de 3ª persona)</option>
+            </select>
+          </div>
+          <div class="reg-group">
+            <label class="reg-label">Grado de Dependencia reconocido</label>
+            <select class="planner-select full-w" id="calcDependencia">
+              <option value="none">Sin grado reconocido</option>
+              <option value="g1">Grado I: Dependencia Moderada</option>
+              <option value="g2">Grado II: Dependencia Severa</option>
+              <option value="g3">Grado III: Gran Dependencia</option>
+            </select>
+          </div>
+          <button class="btn-primary full" onclick="calcNextStep(2)">Siguiente paso →</button>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="calc-step hidden" data-step="2">
+          <h3>2. Situación Laboral y Familiar</h3>
+          <div class="reg-group">
+            <label class="reg-label">Situación laboral del cuidador/a principal</label>
+            <select class="planner-select full-w" id="calcLaboral">
+              <option value="empleado">Trabajador/a por cuenta ajena (Contrato)</option>
+              <option value="autonomo">Autónomo/a</option>
+              <option value="desempleo">En desempleo / Sin empleo</option>
+              <option value="excedencia">En excedencia o reducción por cuidado</option>
+            </select>
+          </div>
+          <div class="reg-group">
+            <label class="reg-label">Edad del menor</label>
+            <input type="number" class="planner-input full-w" id="calcEdad" placeholder="Ej: 6" min="0" max="18" value="6" />
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn-secondary" onclick="calcNextStep(1)">← Atrás</button>
+            <button class="btn-primary" style="flex:1" onclick="calcularPrestaciones()">Calcular Mis Derechos 🧮</button>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div class="calc-result hidden" id="calcResult">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTORIO DE SERVICIOS MODAL -->
+  <div class="tool-panel" id="panelDirectorio">
+    <div class="panel-overlay" id="panelDirOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelDirClose">✕</button>
+      <h2 class="panel-title">🗂️ Directorio de Servicios Cercanos</h2>
+      <p class="panel-sub">Busca centros de atención temprana, terapeutas y asociaciones</p>
+      
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <input type="text" class="planner-input" id="dirSearch" placeholder="Buscar por especialidad o ciudad..." />
+        <button class="btn-primary sm" id="btnSearchDir">Buscar</button>
+      </div>
+
+      <div class="dir-list" id="dirList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTRO DE MENSAJES MODAL -->
+  <div class="tool-panel" id="panelMensajes">
+    <div class="panel-overlay" id="panelMsgOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelMsgClose">✕</button>
+      <h2 class="panel-title">💬 Centro de Mensajes y Apoyo</h2>
+      <p class="panel-sub">Canal directo con el equipo de trabajadores sociales y psicólogos</p>
+      
+      <div class="chat-box" id="chatBox">
+        <div class="chat-msg system">
+          <span>👋 Hola, soy Laura (Trabajadora Social de CuidApp). ¿En qué podemos ayudarte hoy?</span>
+        </div>
+      </div>
+      
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <input type="text" class="planner-input" id="chatInput" placeholder="Escribe tu mensaje o consulta..." />
+        <button class="btn-primary sm" id="btnSendMsg">Enviar</button>
+      </div>
+    </div>
+  </div>
+  <div class="tool-panel" id="panelTest">
+    <div class="panel-overlay" id="panelTestOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelTestClose">✕</button>
+      <h2 class="panel-title">🧪 Test de Bienestar del Cuidador</h2>
+      <p class="panel-sub">Basado en la escala Zarit — 5 preguntas clave</p>
+      <div class="test-container" id="testContainer">
+        <div class="test-progress-bar"><div class="test-progress-fill" id="testProgressFill"></div></div>
+        <div class="test-question" id="testQuestion"></div>
+        <div class="test-options" id="testOptions"></div>
+        <div class="test-result hidden" id="testResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANIFICADOR MODAL -->
+  <div class="tool-panel" id="panelPlanificador">
+    <div class="panel-overlay" id="panelPlanOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelPlanClose">✕</button>
+      <h2 class="panel-title">📅 Planificador Semanal</h2>
+      <p class="panel-sub">Organiza las actividades de cuidado de la semana</p>
+      <div class="planner-grid" id="plannerGrid"></div>
+      <div class="planner-add">
+        <input type="text" class="planner-input" id="plannerInput" placeholder="Nueva actividad..." />
+        <select class="planner-select" id="plannerDay">
+          <option value="Lun">Lunes</option>
+          <option value="Mar">Martes</option>
+          <option value="Mié">Miércoles</option>
+          <option value="Jue">Jueves</option>
+          <option value="Vie">Viernes</option>
+          <option value="Sáb">Sábado</option>
+          <option value="Dom">Domingo</option>
+        </select>
+        <select class="planner-select" id="plannerType">
+          <option value="terapia">🏥 Terapia</option>
+          <option value="medico">💊 Médico</option>
+          <option value="rutina">🌅 Rutina</option>
+          <option value="ocio">🎮 Ocio</option>
+          <option value="descanso">😴 Descanso</option>
+        </select>
+        <button class="btn-primary sm" id="plannerAddBtn">Añadir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO MODAL -->
+  <div class="tool-panel" id="panelRegistro">
+    <div class="panel-overlay" id="panelRegOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelRegClose">✕</button>
+      <h2 class="panel-title">📝 Registro Diario de Situación</h2>
+      <p class="panel-sub">Fecha: <strong id="regFecha"></strong></p>
+      <div class="reg-form">
+        <div class="reg-group">
+          <label class="reg-label">¿Cómo se encuentra el niño hoy?</label>
+          <div class="emoji-selector" id="childMood">
+            <button class="emoji-opt" data-val="muy-bien" title="Muy bien">😄</button>
+            <button class="emoji-opt" data-val="bien" title="Bien">🙂</button>
+            <button class="emoji-opt" data-val="regular" title="Regular">😐</button>
+            <button class="emoji-opt" data-val="mal" title="Mal">😟</button>
+            <button class="emoji-opt" data-val="muy-mal" title="Muy mal">😢</button>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">¿Cómo te sientes tú como cuidador/a?</label>
+          <div class="emoji-selector" id="caregiverMood">
+            <button class="emoji-opt" data-val="muy-bien" title="Muy bien">😄</button>
+            <button class="emoji-opt" data-val="bien" title="Bien">🙂</button>
+            <button class="emoji-opt" data-val="regular" title="Regular">😐</button>
+            <button class="emoji-opt" data-val="mal" title="Mal">😟</button>
+            <button class="emoji-opt" data-val="muy-mal" title="Muy mal">😢</button>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Nivel de energía (cuidador)</label>
+          <div class="energy-slider-wrap">
+            <input type="range" class="energy-slider" id="energySlider" min="1" max="10" value="5" />
+            <span class="energy-val" id="energyVal">5/10</span>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Notas del día</label>
+          <textarea class="reg-textarea" id="regNotas" placeholder="Observaciones, incidencias, logros del niño..."></textarea>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Actividades realizadas</label>
+          <div class="activity-checks" id="activityChecks">
+            <label class="act-check"><input type="checkbox" /> Terapia ocupacional</label>
+            <label class="act-check"><input type="checkbox" /> Fisioterapia</label>
+            <label class="act-check"><input type="checkbox" /> Logopedia</label>
+            <label class="act-check"><input type="checkbox" /> Medicación administrada</label>
+            <label class="act-check"><input type="checkbox" /> Salida exterior</label>
+            <label class="act-check"><input type="checkbox" /> Tiempo de juego</label>
+          </div>
+        </div>
+        <button class="btn-primary full" id="saveRegBtn">💾 Guardar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN FORO DE SITUACIONES -->
+  <section class="page-section forum-section" id="foro">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Comunidad & Apoyo Mutuo</span>
+        <h2 class="section-title">Muro de Situaciones de Familias</h2>
+        <p class="section-sub">Un espacio seguro donde compartir vivencias, buscar apoyo y responder a otros padres en situaciones similares</p>
+      </div>
+
+      <!-- Buscador y controles del foro -->
+      <div class="forum-controls">
+        <div class="forum-search-wrap">
+          <input type="text" class="planner-input" id="forumSearchInput" placeholder="🔍 Buscar por palabras clave (ej. parálisis, colegio, sueño, medicación...)" />
+        </div>
+        <div class="forum-filter-wrap">
+          <select class="planner-select" id="forumCategoryFilter">
+            <option value="all">Todas las categorías</option>
+            <option value="rutina">Rutina y Cuidados</option>
+            <option value="emocional">Apoyo Emocional / Desahogo</option>
+            <option value="escolar">Colegio / Educación</option>
+            <option value="medico">Salud y Terapias</option>
+            <option value="logro">Logros y Alegrías</option>
+          </select>
+          <button class="btn-primary" id="btnNuevaPublicacion">+ Publicar mi Situación</button>
+        </div>
+      </div>
+
+      <!-- Lista de Situaciones (Foro) -->
+      <div class="forum-list" id="forumList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL AUTH (LOGIN / REGISTRO) -->
+  <div class="tool-panel" id="panelAuth">
+    <div class="panel-overlay" id="panelAuthOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelAuthClose">✕</button>
+      
+      <div id="authTabs" style="display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+        <button type="button" class="nfilter active" id="tabLogin" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+        <button type="button" class="nfilter" id="tabRegister" onclick="switchAuthTab('register')">Crear Cuenta</button>
+      </div>
+
+      <!-- FORM LOGIN -->
+      <form id="formLogin" onsubmit="return handleLogin(event)">
+        <h2 class="panel-title">Acceso de Cuidadores</h2>
+        <p class="panel-sub">Accede para publicar tu situación y participar en el foro</p>
+        <div class="reg-group">
+          <label class="reg-label">Correo electrónico</label>
+          <input type="email" class="planner-input full-w" id="loginEmail" placeholder="ejemplo@correo.com" required />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Contraseña</label>
+          <input type="password" class="planner-input full-w" id="loginPass" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-primary full" onclick="handleLogin(event)">Entrar a la Plataforma</button>
+        
+        <div style="margin-top:16px;font-size:0.8rem;color:var(--text-muted);text-align:center;">
+          💡 Demostración: Entra como Admin usando <strong>admin@cuidapp.es</strong> / <strong>admin123</strong>
+        </div>
+      </form>
+
+      <!-- FORM REGISTRO -->
+      <form id="formRegister" class="hidden" onsubmit="return handleRegister(event)">
+        <h2 class="panel-title">Registro de Familia / Profesional</h2>
+        <p class="panel-sub">Únete a la comunidad de apoyo verificada</p>
+        <div class="reg-group">
+          <label class="reg-label">Nombre completo / Alias</label>
+          <input type="text" class="planner-input full-w" id="regNombre" placeholder="Ej: María García" required />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Correo electrónico</label>
+          <input type="email" class="planner-input full-w" id="regEmail" placeholder="ejemplo@correo.com" required />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Contraseña</label>
+          <input type="password" class="planner-input full-w" id="regPass" placeholder="••••••••" required minlength="4" />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Perfil de Usuario</label>
+          <select class="planner-select full-w" id="regRol">
+            <option value="padre">Padre / Madre / Cuidador/a Familiar</option>
+            <option value="profesional">Profesional Sanitario / Educativo</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary full" onclick="handleRegister(event)">Crear Cuenta Verificada</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PANEL DE MODERACIÓN Y CONTROL -->
+  <div class="tool-panel" id="panelAdmin">
+    <div class="panel-overlay" id="panelAdminOverlay"></div>
+    <div class="panel-content" style="max-width:750px;">
+      <button class="panel-close" id="panelAdminClose">✕</button>
+      <h2 class="panel-title">🛡️ Panel de Moderación y Control (Admin)</h2>
+      <p class="panel-sub">Gestiona la seguridad del foro, baneos de usuarios y eliminación de trolls</p>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="nfilter active" id="btnTabUsers" onclick="switchAdminTab('users')">👥 Usuarios</button>
+        <button class="nfilter" id="btnTabPosts" onclick="switchAdminTab('posts')">📝 Publicaciones</button>
+        <button class="nfilter" id="btnTabPortada" onclick="switchAdminTab('portada')">🏠 Familia en Portada</button>
+      </div>
+
+      <!-- LISTA DE USUARIOS -->
+      <div id="adminUsersTab">
+        <h3 style="font-size:0.95rem;margin-bottom:12px;color:var(--text-secondary);">Usuarios Registrados</h3>
+        <div id="adminUserList" style="display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- LISTA DE POSTS MODERACIÓN -->
+      <div id="adminPostsTab" class="hidden">
+        <h3 style="font-size:0.95rem;margin-bottom:12px;color:var(--text-secondary);">Control de Contenidos del Foro</h3>
+        <div id="adminPostList" style="display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- GESTIÓN PORTADA -->
+      <div id="adminPortadaTab" class="hidden">
+        <div style="background:var(--blue-pale);border:2px solid rgba(0,114,187,0.2);border-radius:12px;padding:16px;margin-bottom:16px;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:var(--blue-dark);margin-bottom:6px;">🏠 Familia destacada en portada</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">Fija manualmente una publicación del foro para que aparezca en la portada como "Familia que necesita tu apoyo". Si no fijas ninguna, se mostrará automáticamente la que más apoyos tenga.</p>
+        </div>
+        <div id="adminPortadaList" style="display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tool-panel" id="panelPostDetail">
+    <div class="panel-overlay" id="panelPostOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelPostClose">✕</button>
+      <div id="postDetailContainer">
+        <!-- Dynamic detail and comments -->
+      </div>
+    </div>
+  </div>
+  <section class="page-section news-section" id="noticias">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Actualidad</span>
+        <h2 class="section-title">Noticias y Novedades</h2>
+        <p class="section-sub">Información relevante sobre discapacidad, legislación, ayudas y recursos</p>
+      </div>
+
+      <div class="news-filter-bar">
+        <button class="nfilter active" data-filter="all">Todas</button>
+        <button class="nfilter" data-filter="legislacion">Legislación</button>
+        <button class="nfilter" data-filter="ayudas">Ayudas</button>
+        <button class="nfilter" data-filter="investigacion">Investigación</button>
+        <button class="nfilter" data-filter="consejos">Consejos</button>
+        <button class="nfilter" data-filter="eventos">Eventos</button>
+      </div>
+
+      <div class="news-grid" id="newsGrid">
+        <!-- News cards populated by JS -->
+      </div>
+
+      <div class="news-featured">
+        <div class="featured-news-card">
+          <span class="featured-label">📌 Destacado</span>
+          <h3>Nueva Ley de Familias: Cambios que afectan a cuidadores</h3>
+          <p>La reciente aprobación incluye ampliación del permiso de cuidado hasta 12 semanas, nuevas prestaciones económicas y acceso prioritario a servicios sociales para familias con menores con discapacidad...</p>
+          <div class="fn-meta">
+            <span class="fn-date">📅 Julio 2026</span>
+            <span class="fn-cat">Legislación</span>
+          </div>
+          <button class="btn-secondary sm" id="btnLeerMas">Leer más</button>
+        </div>
+        <div class="quick-news-list">
+          <h4>Últimas noticias</h4>
+          <div class="qn-item" id="qn1">
+            <span class="qn-dot dot-green"></span>
+            <div>
+              <span class="qn-title">Nuevas plazas en centros de día para menores con TEA</span>
+              <span class="qn-time">Hace 2 horas</span>
+            </div>
+          </div>
+          <div class="qn-item" id="qn2">
+            <span class="qn-dot dot-blue"></span>
+            <div>
+              <span class="qn-title">Convocatoria de becas para adaptaciones del hogar</span>
+              <span class="qn-time">Hace 5 horas</span>
+            </div>
+          </div>
+          <div class="qn-item" id="qn3">
+            <span class="qn-dot dot-purple"></span>
+            <div>
+              <span class="qn-title">Estudio: el 70% de cuidadores experimenta burnout severo</span>
+              <span class="qn-time">Ayer</span>
+            </div>
+          </div>
+          <div class="qn-item" id="qn4">
+            <span class="qn-dot dot-orange"></span>
+            <div>
+              <span class="qn-title">Jornada de formación gratuita para familias: inscripción abierta</span>
+              <span class="qn-time">Hace 2 días</span>
+            </div>
+          </div>
+          <div class="qn-item" id="qn5">
+            <span class="qn-dot dot-pink"></span>
+            <div>
+              <span class="qn-title">App de comunicación aumentativa: nueva versión gratuita</span>
+              <span class="qn-time">Hace 3 días</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECURSOS -->
+  <section class="page-section resources-section" id="recursos">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Apoyo</span>
+        <h2 class="section-title">Recursos y Ayuda</h2>
+        <p class="section-sub">Guías, manuales, contactos de emergencia y red de apoyo</p>
+      </div>
+
+      <div class="resources-grid">
+        <div class="res-card res-emergency">
+          <div class="res-icon-big">🆘</div>
+          <h3>Línea de Crisis</h3>
+          <p>Apoyo psicológico urgente 24/7 para cuidadores en situación de desbordamiento</p>
+          <a href="tel:900100001" class="res-btn emergency-btn" id="linkCrisis">📞 900 100 001</a>
+        </div>
+        <div class="res-card res-guide">
+          <div class="res-icon-big">📚</div>
+          <h3>Guía del Cuidador</h3>
+          <p>Manual completo con estrategias, técnicas y recursos para el día a día</p>
+          <button class="res-btn guide-btn" id="btnGuia">Descargar PDF</button>
+        </div>
+        <div class="res-card res-community">
+          <div class="res-icon-big">👥</div>
+          <h3>Grupos de Apoyo</h3>
+          <p>Únete a grupos de cuidadores que comparten experiencias y se apoyan mutuamente</p>
+          <button class="res-btn community-btn" id="btnComunidad">Unirse ahora</button>
+        </div>
+        <div class="res-card res-legal">
+          <div class="res-icon-big">⚖️</div>
+          <h3>Asesoría Legal</h3>
+          <p>Consultas gratuitas sobre derechos, prestaciones y trámites administrativos</p>
+          <button class="res-btn legal-btn" id="btnAsesoriaLegal">Solicitar cita</button>
+        </div>
+        <div class="res-card res-training">
+          <div class="res-icon-big">🎓</div>
+          <h3>Formación Online</h3>
+          <p>Cursos, talleres y webinars sobre cuidados específicos, comunicación y autocuidado</p>
+          <button class="res-btn training-btn" id="btnFormacion">Ver cursos</button>
+        </div>
+        <div class="res-card res-wellness">
+          <div class="res-icon-big">🌿</div>
+          <h3>Autocuidado</h3>
+          <p>Técnicas de respiración, mindfulness y recursos para el bienestar del cuidador</p>
+          <button class="res-btn wellness-btn" id="btnAutocuidado">Explorar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTAS Y TIMELINE -->
+  <section class="page-section alerts-section" id="alertas">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Seguimiento</span>
+        <h2 class="section-title">Alertas y Actividad Reciente</h2>
+      </div>
+
+      <div class="alerts-layout">
+        <div class="alerts-panel">
+          <div class="alerts-header-row">
+            <h3>🔔 Alertas Activas</h3>
+            <button class="btn-micro" id="btnMarkAllRead">Marcar todas leídas</button>
+          </div>
+          <div class="alert-list" id="alertList">
+            <div class="alert-item alert-critical" id="alert1">
+              <span class="alert-dot"></span>
+              <div class="alert-body">
+                <span class="alert-title">Revisión médica pendiente</span>
+                <span class="alert-msg">El menor ID-2847 no ha asistido a revisión neurológica desde hace 45 días</span>
+                <span class="alert-time">Urgente · Hace 1 hora</span>
+              </div>
+              <button class="alert-action" data-id="alert1">✓</button>
+            </div>
+            <div class="alert-item alert-warn" id="alert2">
+              <span class="alert-dot"></span>
+              <div class="alert-body">
+                <span class="alert-title">Agotamiento detectado</span>
+                <span class="alert-msg">La cuidadora Ana M. lleva 18 días sin descanso. Contactar para apoyo.</span>
+                <span class="alert-time">Importante · Hace 3 horas</span>
+              </div>
+              <button class="alert-action" data-id="alert2">✓</button>
+            </div>
+            <div class="alert-item alert-info" id="alert3">
+              <span class="alert-dot"></span>
+              <div class="alert-body">
+                <span class="alert-title">Nueva documentación disponible</span>
+                <span class="alert-msg">Se han actualizado los formularios de solicitud de ayuda domiciliaria</span>
+                <span class="alert-time">Info · Hace 6 horas</span>
+              </div>
+              <button class="alert-action" data-id="alert3">✓</button>
+            </div>
+            <div class="alert-item alert-success" id="alert4">
+              <span class="alert-dot"></span>
+              <div class="alert-body">
+                <span class="alert-title">Prestación aprobada</span>
+                <span class="alert-msg">La prestación para familia García-López ha sido aprobada. Inicio: 01/08/2026</span>
+                <span class="alert-time">Éxito · Ayer</span>
+              </div>
+              <button class="alert-action" data-id="alert4">✓</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-panel">
+          <h3>📋 Actividad Reciente</h3>
+          <div class="timeline" id="timeline">
+            <div class="tl-item">
+              <div class="tl-dot tl-purple"></div>
+              <div class="tl-content">
+                <span class="tl-time">Hoy, 14:30</span>
+                <span class="tl-text">Nueva familia registrada: Familia Martínez (niño con parálisis cerebral, 4 años)</span>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-teal"></div>
+              <div class="tl-content">
+                <span class="tl-time">Hoy, 12:15</span>
+                <span class="tl-text">Test de bienestar completado — cuidadora López: puntuación 74/100</span>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-orange"></div>
+              <div class="tl-content">
+                <span class="tl-time">Hoy, 09:00</span>
+                <span class="tl-text">Sesión de fisioterapia registrada — ID niño 1092</span>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-blue"></div>
+              <div class="tl-content">
+                <span class="tl-time">Ayer, 16:45</span>
+                <span class="tl-text">Documento descargado: "Guía de comunicación aumentativa para padres"</span>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-pink"></div>
+              <div class="tl-content">
+                <span class="tl-time">Ayer, 11:20</span>
+                <span class="tl-text">Alerta enviada al equipo de apoyo — caso crítico detectado</span>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-green"></div>
+              <div class="tl-content">
+                <span class="tl-time">23 Jul, 10:00</span>
+                <span class="tl-text">Prestación económica aprobada para 3 nuevas familias</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFOGRAFÍA ESTADÍSTICA -->
+  <section class="page-section infographic-section" id="infografia">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Datos</span>
+        <h2 class="section-title">En cifras: La realidad de los cuidadores</h2>
+      </div>
+      <div class="infographic-grid">
+        <div class="info-stat-card">
+          <div class="info-icon">⏰</div>
+          <div class="info-number">72<span>h</span></div>
+          <div class="info-label">horas semanales<br/>de cuidado en promedio</div>
+          <div class="info-bar" style="--pct:100%"></div>
+        </div>
+        <div class="info-stat-card">
+          <div class="info-icon">💶</div>
+          <div class="info-number">-34<span>%</span></div>
+          <div class="info-label">reducción de ingresos<br/>al asumir el cuidado</div>
+          <div class="info-bar danger" style="--pct:34%"></div>
+        </div>
+        <div class="info-stat-card">
+          <div class="info-icon">👩</div>
+          <div class="info-number">78<span>%</span></div>
+          <div class="info-label">de cuidadores<br/>son mujeres</div>
+          <div class="info-bar purple" style="--pct:78%"></div>
+        </div>
+        <div class="info-stat-card">
+          <div class="info-icon">😴</div>
+          <div class="info-number">4.2<span>h</span></div>
+          <div class="info-label">de sueño diario<br/>en promedio</div>
+          <div class="info-bar warn" style="--pct:42%"></div>
+        </div>
+        <div class="info-stat-card">
+          <div class="info-icon">🏥</div>
+          <div class="info-number">3x</div>
+          <div class="info-label">más riesgo de<br/>problemas de salud</div>
+          <div class="info-bar danger" style="--pct:75%"></div>
+        </div>
+        <div class="info-stat-card">
+          <div class="info-icon">🤲</div>
+          <div class="info-number">89<span>%</span></div>
+          <div class="info-label">no reciben apoyo<br/>profesional regular</div>
+          <div class="info-bar warn" style="--pct:89%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <span class="brand-icon">💜</span>
+        <span class="brand-text">Cuid<strong>App</strong></span>
+        <p>Apoyando a quienes cuidan con amor incondicional</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Plataforma</h4>
+          <a href="#dashboard">Dashboard</a>
+          <a href="#situacion">Situación</a>
+          <a href="#herramientas">Herramientas</a>
+          <a href="#noticias">Noticias</a>
+        </div>
+        <div class="footer-col">
+          <h4>Recursos</h4>
+          <a href="#recursos">Guías</a>
+          <a href="#recursos">Formación</a>
+          <a href="#recursos">Comunidad</a>
+          <a href="#alertas">Alertas</a>
+        </div>
+        <div class="footer-col">
+          <h4>Contacto</h4>
+          <a href="mailto:info@cuidapp.es">info@cuidapp.es</a>
+          <a href="tel:900100001">900 100 001</a>
+          <a href="#">Política de privacidad</a>
+          <a href="#">Aviso legal</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 CuidApp · Todos los derechos reservados · Con ❤️ para las familias cuidadoras</span>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
