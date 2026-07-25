@@ -5,6 +5,16 @@
 'use strict';
 
 // =============================================
+// HTML ESCAPING (evita XSS en contenido de usuario)
+// =============================================
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value).replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[ch]);
+}
+
+// =============================================
 // NAVBAR + PAGE ROUTER
 // =============================================
 const navbar    = document.getElementById('navbar');
@@ -153,7 +163,7 @@ function showToast(message, type = 'info', duration = 4000) {
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${icons[type]}</span><span class="toast-msg">${message}</span>`;
+  toast.innerHTML = `<span>${icons[type]}</span><span class="toast-msg">${escapeHtml(message)}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = '0';
@@ -218,7 +228,7 @@ function updateUserNavUI() {
     area.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;">
         ${cu.role === 'admin' ? '<button class="btn-micro" style="color:var(--orange);border-color:var(--orange)" onclick="openAdminPanel()">🛡️ Moderación</button>' : ''}
-        <div class="avatar" title="${cu.name}">${cu.name.substring(0,2).toUpperCase()}</div>
+        <div class="avatar" title="${escapeHtml(cu.name)}">${escapeHtml(cu.name.substring(0,2).toUpperCase())}</div>
         <button class="btn-micro" onclick="logoutUser()">Salir</button>
       </div>`;
   } else {
@@ -355,24 +365,24 @@ function renderForum() {
     <div class="forum-card" id="${p.id}">
       <div class="forum-card-header">
         <div class="forum-author-info">
-          <div class="forum-avatar">${p.author.substring(0,2).toUpperCase()}</div>
+          <div class="forum-avatar">${escapeHtml(p.author.substring(0,2).toUpperCase())}</div>
           <div>
-            <div class="forum-author-name">${p.author}</div>
-            <div class="forum-date">${p.date}</div>
+            <div class="forum-author-name">${escapeHtml(p.author)}</div>
+            <div class="forum-date">${escapeHtml(p.date)}</div>
           </div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
-          <span class="forum-tag">${p.catLabel}</span>
+          <span class="forum-tag">${escapeHtml(p.catLabel)}</span>
           ${cu && cu.role === 'admin' ? `<button class="btn-micro" style="color:var(--red)" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
         </div>
       </div>
       <div class="forum-body">
-        <h3 class="forum-title">${p.title}</h3>
-        <p class="forum-snippet">${p.content}</p>
+        <h3 class="forum-title">${escapeHtml(p.title)}</h3>
+        <p class="forum-snippet">${escapeHtml(p.content)}</p>
         <div class="forum-mood-pills">
-          <span class="mood-pill">👶 ${p.childMood || '🙂 Bien'}</span>
-          <span class="mood-pill">🧠 ${p.caregiverMood || '😐 Regular'}</span>
-          <span class="mood-pill">⚡ ${p.energy || '5/10'}</span>
+          <span class="mood-pill">👶 ${escapeHtml(p.childMood || '🙂 Bien')}</span>
+          <span class="mood-pill">🧠 ${escapeHtml(p.caregiverMood || '😐 Regular')}</span>
+          <span class="mood-pill">⚡ ${escapeHtml(p.energy || '5/10')}</span>
         </div>
       </div>
       <div class="forum-footer">
@@ -414,18 +424,18 @@ window.openPostDetail = function(postId) {
   const renderComment = (c, i) => `
     <div class="comment-item">
       <div class="comment-header">
-        <span class="comment-author">${c.author}</span>
-        <span class="comment-date">${c.date}</span>
+        <span class="comment-author">${escapeHtml(c.author)}</span>
+        <span class="comment-date">${escapeHtml(c.date)}</span>
       </div>
-      <div class="comment-body">${c.text}</div>
+      <div class="comment-body">${escapeHtml(c.text)}</div>
       ${c.image ? `
         <div class="comment-image-wrap">
-          <img src="${c.image}" alt="Imagen adjunta" class="comment-image"
+          <img src="${escapeHtml(c.image)}" alt="Imagen adjunta" class="comment-image"
                onclick="openImageLightbox('${c.image}')" />
         </div>` : ''}
       ${c.link ? `
-        <a href="${c.link}" target="_blank" rel="noopener noreferrer" class="comment-link">
-          🔗 ${c.link}
+        <a href="${escapeHtml(c.link)}" target="_blank" rel="noopener noreferrer" class="comment-link">
+          🔗 ${escapeHtml(c.link)}
         </a>` : ''}
       ${cu && cu.role === 'admin' ? `<button class="btn-micro" style="color:var(--red);margin-top:6px" onclick="deleteComment('${p.id}',${i})">🗑️ Borrar</button>` : ''}
     </div>
@@ -433,14 +443,14 @@ window.openPostDetail = function(postId) {
 
   document.getElementById('postDetailContainer').innerHTML = `
     <div class="forum-author-info" style="margin-bottom:16px;">
-      <div class="forum-avatar">${p.author.substring(0,2).toUpperCase()}</div>
+      <div class="forum-avatar">${escapeHtml(p.author.substring(0,2).toUpperCase())}</div>
       <div>
-        <div class="forum-author-name">${p.author}</div>
-        <div class="forum-date">${p.date} · <span style="color:var(--blue)">${p.catLabel}</span></div>
+        <div class="forum-author-name">${escapeHtml(p.author)}</div>
+        <div class="forum-date">${escapeHtml(p.date)} · <span style="color:var(--blue)">${escapeHtml(p.catLabel)}</span></div>
       </div>
     </div>
-    <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;color:var(--text-primary)">${p.title}</h2>
-    <p style="font-size:0.92rem;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">${p.content}</p>
+    <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;color:var(--text-primary)">${escapeHtml(p.title)}</h2>
+    <p style="font-size:0.92rem;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">${escapeHtml(p.content)}</p>
     <div style="border-top:1px solid var(--border);padding-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">💬 Respuestas (${p.comments.length})</h3>
       <div style="max-height:240px;overflow-y:auto;margin-bottom:20px;">
@@ -667,8 +677,8 @@ function renderAdminUsers() {
   list.innerHTML = users.map(u => `
     <div class="admin-user-row">
       <div class="admin-user-info">
-        <strong>${u.name} ${u.banned ? '<span class="user-banned-tag">BANEADO</span>' : ''}</strong>
-        <span>📧 ${u.email} · ${u.role}</span>
+        <strong>${escapeHtml(u.name)} ${u.banned ? '<span class="user-banned-tag">BANEADO</span>' : ''}</strong>
+        <span>📧 ${escapeHtml(u.email)} · ${escapeHtml(u.role)}</span>
       </div>
       ${u.role !== 'admin' ? `
         <button class="btn-micro" style="${u.banned ? 'color:var(--green)' : 'color:var(--red)'}" onclick="toggleBanUser('${u.id}')">
@@ -698,8 +708,8 @@ function renderAdminPosts() {
   list.innerHTML = posts.map(p => `
     <div class="admin-user-row">
       <div class="admin-user-info">
-        <strong>${p.title}</strong>
-        <span>Por: ${p.author} · ${p.date} · ❤️ ${p.likes} apoyos</span>
+        <strong>${escapeHtml(p.title)}</strong>
+        <span>Por: ${escapeHtml(p.author)} · ${escapeHtml(p.date)} · ❤️ ${p.likes} apoyos</span>
       </div>
       <button class="btn-micro" style="color:var(--red)" onclick="deletePost('${p.id}')">🗑️ Eliminar</button>
     </div>
@@ -745,8 +755,8 @@ function renderAdminPortada() {
     return `
       <div class="admin-user-row" style="${isPinned ? 'border:2px solid var(--gold);background:var(--gold-pale);' : ''}">
         <div class="admin-user-info">
-          <strong>${p.title} ${isPinned ? '<span class="ffw-pinned-tag">📌 EN PORTADA</span>' : ''}</strong>
-          <span>Por: ${p.author} · ❤️ ${p.likes} apoyos · ${p.comments.length} respuestas</span>
+          <strong>${escapeHtml(p.title)} ${isPinned ? '<span class="ffw-pinned-tag">📌 EN PORTADA</span>' : ''}</strong>
+          <span>Por: ${escapeHtml(p.author)} · ❤️ ${p.likes} apoyos · ${p.comments.length} respuestas</span>
         </div>
         <div style="display:flex;gap:6px;">
           ${isPinned
@@ -782,17 +792,17 @@ function renderFeaturedFamilyWidget() {
 
   body.innerHTML = `
     <div class="ffw-author-row">
-      <div class="ffw-avatar">${featured.author.substring(0,2).toUpperCase()}</div>
+      <div class="ffw-avatar">${escapeHtml(featured.author.substring(0,2).toUpperCase())}</div>
       <div>
-        <div class="ffw-name">${featured.author}</div>
-        <div class="ffw-date">${featured.date}</div>
+        <div class="ffw-name">${escapeHtml(featured.author)}</div>
+        <div class="ffw-date">${escapeHtml(featured.date)}</div>
       </div>
       ${isManualPin ? '<span class="ffw-pinned-tag">📌 Destacado por admin</span>' : ''}
     </div>
-    <div class="ffw-title">${featured.title}</div>
-    <div class="ffw-excerpt">${featured.content}</div>
+    <div class="ffw-title">${escapeHtml(featured.title)}</div>
+    <div class="ffw-excerpt">${escapeHtml(featured.content)}</div>
     <div class="ffw-stats">
-      <span class="ffw-stat">${featured.catLabel}</span>
+      <span class="ffw-stat">${escapeHtml(featured.catLabel)}</span>
       <span class="ffw-stat">💬 ${featured.comments.length} respuestas</span>
     </div>
     <div class="ffw-likes">❤️ ${featured.likes} familias dan su apoyo</div>
@@ -935,7 +945,7 @@ function renderPlanner() {
   grid.innerHTML = days.map(day => `
     <div class="planner-day-col" data-day="${day}">
       <div class="planner-day-header">${day}</div>
-      ${(plannerData[day]||[]).map(t => `<div class="planner-task ${t.type}" title="${t.text}">${t.text}</div>`).join('')}
+      ${(plannerData[day]||[]).map(t => `<div class="planner-task ${escapeHtml(t.type)}" title="${escapeHtml(t.text)}">${escapeHtml(t.text)}</div>`).join('')}
     </div>`).join('');
 }
 
@@ -1042,7 +1052,7 @@ function sendChatMessage() {
   const txt   = input?.value.trim();
   if (!txt) return;
   const box = document.getElementById('chatBox');
-  const uMsg = document.createElement('div'); uMsg.className='chat-msg user'; uMsg.innerHTML=`<span>${txt}</span>`;
+  const uMsg = document.createElement('div'); uMsg.className='chat-msg user'; uMsg.innerHTML=`<span>${escapeHtml(txt)}</span>`;
   box.appendChild(uMsg);
   input.value = '';
   box.scrollTop = box.scrollHeight;
