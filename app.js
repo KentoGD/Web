@@ -253,6 +253,7 @@ window.handleLogin = function(e) {
   showToast(`👋 Bienvenido/a, ${found.name}`, 'success');
   closePanel('panelAuth');
   renderForum();
+  renderMyTrayectoria();
   return false;
 };
 
@@ -275,6 +276,7 @@ window.handleRegister = function(e) {
   showToast('✅ Cuenta creada. Bienvenido/a a la comunidad.', 'success');
   closePanel('panelAuth');
   renderForum();
+  renderMyTrayectoria();
   return false;
 };
 
@@ -282,7 +284,176 @@ window.logoutUser = function() {
   setCurrentUser(null);
   showToast('Sesión cerrada', 'info');
   renderForum();
+  renderMyTrayectoria();
 };
+
+// =============================================
+// TRAYECTORIA POR USUARIO Y DETECCIÓN DE RIESGO
+// =============================================
+// Cada "Registro de Situación" queda guardado por usuario (no solo como
+// post del foro), para poder ver su evolución y detectar patrones de
+// riesgo que requieran contacto proactivo del equipo de apoyo.
+const MOOD_SEVERITY = { 'muy-bien': 0, 'bien': 1, 'regular': 2, 'mal': 3, 'muy-mal': 4 };
+
+let _situacionLogCache = null;
+function getSituacionLog() {
+  if (_situacionLogCache) return _situacionLogCache;
+  const data = localStorage.getItem('cuidapp_situacion_log');
+  _situacionLogCache = data ? JSON.parse(data) : [];
+  return _situacionLogCache;
+}
+function saveSituacionLog(log) {
+  _situacionLogCache = log;
+  localStorage.setItem('cuidapp_situacion_log', JSON.stringify(log));
+}
+
+let _riskCasesCache = null;
+function getRiskCases() {
+  if (_riskCasesCache) return _riskCasesCache;
+  const data = localStorage.getItem('cuidapp_risk_cases');
+  _riskCasesCache = data ? JSON.parse(data) : [];
+  return _riskCasesCache;
+}
+function saveRiskCases(cases) {
+  _riskCasesCache = cases;
+  localStorage.setItem('cuidapp_risk_cases', JSON.stringify(cases));
+}
+
+// Regla simple y transparente: mira los últimos 3 registros del usuario.
+// "grave" si en 2+ de ellos coinciden ánimo del cuidador bajo Y energía baja;
+// "atención" si eso ocurre 1 vez, o si ánimo bajo/energía baja aparecen sueltos 2+ veces.
+function computeRiskForUser(userId) {
+  const records = getSituacionLog()
+    .filter(r => r.userId === userId)
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 3);
+  if (records.length === 0) return { level: 'ok', records };
+
+  let severeCount = 0, attentionCount = 0;
+  records.forEach(r => {
+    const caregiverSeverity = MOOD_SEVERITY[r.caregiverMoodVal] ?? 2;
+    const lowMood = caregiverSeverity >= 3;
+    const lowEnergy = r.energy <= 3;
+    if (lowMood && lowEnergy) severeCount++;
+    else if (lowMood || lowEnergy) attentionCount++;
+  });
+
+  let level = 'ok';
+  if (severeCount >= 2) level = 'grave';
+  else if (severeCount >= 1 || attentionCount >= 2) level = 'atencion';
+  return { level, records };
+}
+
+function flagRiskCase(user, level) {
+  const cases = getRiskCases();
+  const existing = cases.find(c => c.userId === user.id);
+  if (level === 'ok') {
+    if (existing) existing.level = 'ok';
+    saveRiskCases(cases);
+    return;
+  }
+  if (existing) {
+    existing.level = level;
+    existing.userName = user.name;
+    existing.updatedAt = Date.now();
+    existing.resolved = false;
+  } else {
+    cases.push({ userId: user.id, userName: user.name, level, updatedAt: Date.now(), resolved: false });
+  }
+  saveRiskCases(cases);
+}
+
+window.resolveRiskCase = function(userId) {
+  const cases = getRiskCases();
+  const c = cases.find(x => x.userId === userId);
+  if (c) {
+    c.resolved = true;
+    saveRiskCases(cases);
+    renderAdminRiesgo();
+    showToast('Caso marcado como contactado', 'success');
+  }
+};
+
+function renderMyTrayectoria() {
+  const container = document.getElementById('miTrayectoriaCard');
+  if (!container) return;
+  const cu = getCurrentUser();
+
+  if (!cu) {
+    container.innerHTML = `
+      <div class="trayectoria-empty">
+        <span>📊 Inicia sesión y registra tu situación diaria para ver aquí tu trayectoria personal.</span>
+        <button class="btn-secondary sm" onclick="openAuthModal()">Iniciar Sesión</button>
+      </div>`;
+    return;
+  }
+
+  const records = getSituacionLog()
+    .filter(r => r.userId === cu.id)
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .slice(-7);
+
+  if (records.length === 0) {
+    container.innerHTML = `
+      <div class="trayectoria-empty">
+        <span>📊 Todavía no tenés registros. Usá "Registrar Situación" para empezar tu seguimiento diario.</span>
+        <button class="btn-primary sm" onclick="openRegistro()">+ Registrar Situación</button>
+      </div>`;
+    return;
+  }
+
+  const risk = computeRiskForUser(cu.id);
+  const RISK_LABELS = {
+    ok:       ['🟢 Estable', 'risk-ok'],
+    atencion: ['🟡 Necesita atención', 'risk-atencion'],
+    grave:    ['🔴 Riesgo alto — apoyo prioritario', 'risk-grave']
+  };
+  const [riskText, riskClass] = RISK_LABELS[risk.level];
+
+  container.innerHTML = `
+    <div class="trayectoria-header">
+      <h3>📊 Mi Trayectoria</h3>
+      <span class="risk-badge ${riskClass}">${riskText}</span>
+    </div>
+    <div class="trayectoria-bars">
+      ${records.map(r => `
+        <div class="tray-bar-col" title="${escapeHtml(r.childMood)} · ${escapeHtml(r.caregiverMood)} · Energía ${r.energy}/10">
+          <div class="tray-bar" style="height:${r.energy * 10}%"></div>
+          <span class="tray-bar-label">${new Date(r.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>
+        </div>
+      `).join('')}
+    </div>
+    <p class="trayectoria-hint">Energía del cuidador en tus últimos ${records.length} registros.</p>
+    ${risk.level === 'grave' ? `
+      <div class="risk-alert-banner">
+        <strong>💜 No estás solo/a.</strong> Detectamos varios días difíciles seguidos y tu caso quedó marcado como prioritario para nuestro equipo. Podés escribirnos ahora mismo.
+        <button class="btn-primary sm" onclick="openPanel('panelMensajes')">Contactar con apoyo →</button>
+      </div>` : ''}
+  `;
+}
+
+function renderAdminRiesgo() {
+  const list = document.getElementById('adminRiesgoList');
+  if (!list) return;
+  const cases = getRiskCases()
+    .filter(c => !c.resolved && c.level !== 'ok')
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  if (cases.length === 0) {
+    list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:20px">No hay casos de riesgo activos. 🎉</p>';
+    return;
+  }
+
+  list.innerHTML = cases.map(c => `
+    <div class="admin-user-row" style="${c.level === 'grave' ? 'border:2px solid var(--red);background:var(--red-pale);' : ''}">
+      <div class="admin-user-info">
+        <strong>${escapeHtml(c.userName)} <span class="user-banned-tag" style="${c.level === 'grave' ? 'background:var(--red);color:white;' : 'background:var(--gold-pale);color:var(--gold);'}">${c.level === 'grave' ? 'RIESGO ALTO' : 'ATENCIÓN'}</span></strong>
+        <span>Última actualización: ${new Date(c.updatedAt).toLocaleString('es-ES')}</span>
+      </div>
+      <button class="btn-micro" style="color:var(--green)" onclick="resolveRiskCase('${c.userId}')">✅ Marcar contactado</button>
+    </div>
+  `).join('');
+}
 
 // =============================================
 // FORO DE SITUACIONES (localStorage)
@@ -602,28 +773,51 @@ document.getElementById('panelRegOverlay')?.addEventListener('click',      () =>
 document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const cu = getCurrentUser();
   if (!cu) { openAuthModal(); return; }
-  const notas         = document.getElementById('regNotas')?.value.trim();
-  const childOpt      = document.querySelector('#childMood .emoji-opt.active');
-  const caregiverOpt  = document.querySelector('#caregiverMood .emoji-opt.active');
-  const energyVal     = document.getElementById('energySlider')?.value || '5';
+  const notas            = document.getElementById('regNotas')?.value.trim();
+  const childOpt         = document.querySelector('#childMood .emoji-opt.active');
+  const caregiverOpt     = document.querySelector('#caregiverMood .emoji-opt.active');
+  const energyVal        = parseInt(document.getElementById('energySlider')?.value || '5', 10);
+  const childMoodVal     = childOpt     ? childOpt.dataset.val     : 'bien';
+  const caregiverMoodVal = caregiverOpt ? caregiverOpt.dataset.val : 'regular';
+  const childMood        = childOpt     ? childOpt.title     : '🙂 Bien';
+  const caregiverMood    = caregiverOpt ? caregiverOpt.title : '😐 Regular';
+
+  // Registro estructurado por usuario: alimenta "Mi Trayectoria" y la
+  // detección de riesgo, independientemente de si se publica en el foro.
+  const log = getSituacionLog();
+  log.push({
+    id: 'reg-' + Date.now(), userId: cu.id, userName: cu.name,
+    timestamp: Date.now(), childMoodVal, caregiverMoodVal,
+    childMood, caregiverMood, energy: energyVal, notas: notas || ''
+  });
+  saveSituacionLog(log);
+
+  const risk = computeRiskForUser(cu.id);
+  flagRiskCase(cu, risk.level);
+
   if (notas) {
     const posts = getStoredPosts();
     posts.unshift({
       id: 'post-' + Date.now(), author: cu.name, authorId: cu.id,
       date: 'Ahora mismo', category: 'emocional', catLabel: 'Registro Diario',
       title: 'Registro: ' + (notas.length > 45 ? notas.substring(0,45) + '...' : notas),
-      content: notas,
-      childMood:      childOpt     ? childOpt.title     : '🙂 Bien',
-      caregiverMood:  caregiverOpt ? caregiverOpt.title : '😐 Regular',
+      content: notas, childMood, caregiverMood,
       energy: energyVal + '/10', likes: 0, userLiked: false, comments: []
     });
     savePosts(posts);
     renderForum();
   }
-  showToast('💾 Situación guardada y publicada en el Foro', 'success');
+
+  if (risk.level === 'grave') {
+    showToast('💜 Detectamos varios días difíciles seguidos. Tu caso quedó marcado como prioritario para que nuestro equipo te contacte.', 'error', 7000);
+  } else {
+    showToast('💾 Situación guardada' + (notas ? ' y publicada en el Foro' : ''), 'success');
+  }
+
+  renderMyTrayectoria();
   setTimeout(() => {
     closePanel('panelRegistro');
-    goToPage(PAGE_IDS.indexOf('foro'));
+    goToPage(PAGE_IDS.indexOf(notas ? 'foro' : 'situacion'));
   }, 900);
 });
 
@@ -648,6 +842,7 @@ if (slider) slider.addEventListener('input', () => { if (energyVal) energyVal.te
 window.openAdminPanel = function() {
   renderAdminUsers();
   renderAdminPosts();
+  renderAdminRiesgo();
   openPanel('panelAdmin');
 };
 document.getElementById('panelAdminClose')?.addEventListener('click',  () => closePanel('panelAdmin'));
@@ -657,10 +852,13 @@ window.switchAdminTab = function(tab) {
   document.getElementById('btnTabUsers').classList.toggle('active', tab === 'users');
   document.getElementById('btnTabPosts').classList.toggle('active', tab === 'posts');
   document.getElementById('btnTabPortada').classList.toggle('active', tab === 'portada');
+  document.getElementById('btnTabRiesgo').classList.toggle('active', tab === 'riesgo');
   document.getElementById('adminUsersTab').classList.toggle('hidden', tab !== 'users');
   document.getElementById('adminPostsTab').classList.toggle('hidden', tab !== 'posts');
   document.getElementById('adminPortadaTab').classList.toggle('hidden', tab !== 'portada');
+  document.getElementById('adminRiesgoTab').classList.toggle('hidden', tab !== 'riesgo');
   if (tab === 'portada') renderAdminPortada();
+  if (tab === 'riesgo') renderAdminRiesgo();
 };
 
 function renderAdminUsers() {
@@ -1139,6 +1337,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 updateUserNavUI();
 renderForum();
 renderFeaturedFamilyWidget();
+renderMyTrayectoria();
 
 setTimeout(() => showToast('👋 Bienvenido/a a CuidApp. Tienes 3 alertas pendientes.', 'info', 5000), 1500);
 console.log('%c💜 CuidApp cargado correctamente', 'color:#0072BB;font-size:14px;font-weight:bold;');

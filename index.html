@@ -107,6 +107,11 @@
         <p class="section-sub">Indicadores clave actualizados sobre el bienestar, carga y necesidades de las familias cuidadoras</p>
       </div>
 
+      <!-- MI TRAYECTORIA PERSONAL -->
+      <div class="trayectoria-card" id="miTrayectoriaCard">
+        <!-- Populated by JS -->
+      </div>
+
       <div class="indicators-grid">
         <div class="indicator-card card-purple" id="card-burnout">
           <div class="ind-header">
@@ -656,6 +661,7 @@
         <button class="nfilter active" id="btnTabUsers" onclick="switchAdminTab('users')">👥 Usuarios</button>
         <button class="nfilter" id="btnTabPosts" onclick="switchAdminTab('posts')">📝 Publicaciones</button>
         <button class="nfilter" id="btnTabPortada" onclick="switchAdminTab('portada')">🏠 Familia en Portada</button>
+        <button class="nfilter" id="btnTabRiesgo" onclick="switchAdminTab('riesgo')">🚨 Casos de Riesgo</button>
       </div>
 
       <!-- LISTA DE USUARIOS -->
@@ -681,6 +687,17 @@
           <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">Fija manualmente una publicación del foro para que aparezca en la portada como "Familia que necesita tu apoyo". Si no fijas ninguna, se mostrará automáticamente la que más apoyos tenga.</p>
         </div>
         <div id="adminPortadaList" style="display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- CASOS DE RIESGO -->
+      <div id="adminRiesgoTab" class="hidden">
+        <div style="background:var(--red-pale);border:2px solid rgba(230,57,70,0.25);border-radius:12px;padding:16px;margin-bottom:16px;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:var(--red);margin-bottom:6px;">🚨 Familias que necesitan contacto</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">Se marcan automáticamente según los registros diarios de "Situación" de cada familia (ánimo del cuidador y energía en sus últimos registros). Contactalas y marcá el caso como atendido.</p>
+        </div>
+        <div id="adminRiesgoList" style="display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;">
           <!-- Populated by JS -->
         </div>
       </div>
