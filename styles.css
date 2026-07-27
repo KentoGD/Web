@@ -171,6 +171,31 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
   background: transparent;
 }
 .hero-bg-shapes { position: absolute; inset: 0; pointer-events: none; }
+
+/* Cabecera de marca del hero: logo + nombre completo */
+.hero-brand {
+  position: relative; z-index: 1;
+  max-width: 1200px; width: 100%; margin: 0 auto 48px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+}
+.hero-brand-logo { height: 62px; width: auto; margin-bottom: 10px; }
+.hero-brand-name {
+  font-family: 'Baloo 2', 'Quicksand', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5rem); font-weight: 800;
+  letter-spacing: 0.14em; line-height: 1; margin-left: 0.14em;
+  color: var(--blue-dark);
+}
+.hero-brand-full {
+  font-size: clamp(0.72rem, 1.5vw, 0.95rem); font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-secondary); max-width: 700px;
+}
+.hero-brand-ca { font-weight: 600; color: var(--text-muted); font-size: clamp(0.66rem, 1.3vw, 0.85rem); }
+
+@media (max-width: 768px) {
+  .hero-brand { margin-bottom: 32px; }
+  .hero-brand-logo { height: 46px; }
+}
 .shape {
   position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25;
   animation: float-shape 9s ease-in-out infinite;
