@@ -619,7 +619,7 @@ function renderForum() {
       </div>
       <div class="forum-body">
         <h3 class="forum-title">${escapeHtml(p.title)}</h3>
-        <p class="forum-snippet">${escapeHtml(p.content)}</p>
+        <p class="forum-snippet post-detail-original">${escapeHtml(p.content)}</p>
         <div class="forum-mood-pills">
           <span class="mood-pill">👶 Niño/a: ${escapeHtml(p.childMood || '🙂 Bien')}</span>
           <span class="mood-pill">🧠 Cuidador/a: ${escapeHtml(p.caregiverMood || '😐 Regular')}</span>
