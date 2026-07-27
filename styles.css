@@ -757,6 +757,11 @@ section { padding: 90px 0; }
 .btn-like:hover, .btn-like.liked { color: var(--red); }
 .forum-comments-count { font-size: 0.85rem; color: var(--text-muted); }
 
+.post-detail-original {
+  background: var(--purple-pale); border-left: 4px solid var(--purple);
+  border-radius: var(--radius-xs); padding: 14px 16px; margin-bottom: 20px;
+}
+
 /* Comments */
 .comment-item { background: var(--bg-section); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 14px; margin-bottom: 10px; }
 .comment-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.8rem; }

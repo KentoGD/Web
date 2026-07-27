@@ -700,7 +700,7 @@ window.openPostDetail = function(postId) {
       </div>
     </div>
     <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;color:var(--text-primary)">${escapeHtml(p.title)}</h2>
-    <p style="font-size:0.92rem;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">${escapeHtml(p.content)}</p>
+    <p class="post-detail-original" style="font-size:0.92rem;color:var(--text-secondary);line-height:1.6;">${escapeHtml(p.content)}</p>
     <div style="border-top:1px solid var(--border);padding-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">💬 Respuestas (${p.comments.length})</h3>
       <div style="max-height:240px;overflow-y:auto;margin-bottom:20px;">
