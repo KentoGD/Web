@@ -1642,16 +1642,16 @@ const PLANNER_TYPES = {
 };
 
 const SEED_PLANNER_EVENTS = [
-  { id: 'evt-1', day: 'Lun', text: 'Fisioterapia',      type: 'terapia',  description: null, image: null, link: null },
-  { id: 'evt-2', day: 'Lun', text: 'Medicación',        type: 'medico',   description: null, image: null, link: null },
-  { id: 'evt-3', day: 'Mar', text: 'Logopedia',         type: 'terapia',  description: null, image: null, link: null },
-  { id: 'evt-4', day: 'Mié', text: 'Médico',            type: 'medico',   description: null, image: null, link: null },
-  { id: 'evt-5', day: 'Mié', text: 'Juego libre',       type: 'ocio',     description: null, image: null, link: null },
-  { id: 'evt-6', day: 'Jue', text: 'T. Ocupacional',    type: 'terapia',  description: null, image: null, link: null },
-  { id: 'evt-7', day: 'Vie', text: 'Rutina mañana',     type: 'rutina',   description: null, image: null, link: null },
-  { id: 'evt-8', day: 'Vie', text: 'Parque',            type: 'ocio',     description: null, image: null, link: null },
-  { id: 'evt-9', day: 'Sáb', text: 'Descanso cuidador', type: 'descanso', description: null, image: null, link: null },
-  { id: 'evt-10', day: 'Dom', text: 'Familia',          type: 'ocio',     description: null, image: null, link: null }
+  { id: 'evt-1', day: 'Lun', text: 'Fisioterapia',      type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-2', day: 'Lun', text: 'Medicación',        type: 'medico',   description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-3', day: 'Mar', text: 'Logopedia',         type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-4', day: 'Mié', text: 'Médico',            type: 'medico',   description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-5', day: 'Mié', text: 'Juego libre',       type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-6', day: 'Jue', text: 'T. Ocupacional',    type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-7', day: 'Vie', text: 'Rutina mañana',     type: 'rutina',   description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-8', day: 'Vie', text: 'Parque',            type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-9', day: 'Sáb', text: 'Descanso cuidador', type: 'descanso', description: null, image: null, imagePosition: 'center', link: null },
+  { id: 'evt-10', day: 'Dom', text: 'Familia',          type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null }
 ];
 
 let _plannerCache = null;
@@ -1671,9 +1671,14 @@ function renderPlanner() {
   grid.innerHTML = days.map(day => `
     <div class="planner-day-col" data-day="${day}">
       <div class="planner-day-header">${day}</div>
-      ${events.filter(e => e.day === day).map(e => `
+      ${events.filter(e => e.day === day).map(e => e.image ? `
+        <div class="planner-task-photo" onclick="openEventoDetail('${e.id}')" title="${escapeHtml(e.text)}">
+          <img src="${escapeHtml(e.image)}" alt="" style="object-position:${escapeHtml(e.imagePosition || 'center')}" />
+          <div class="planner-task-photo-label ${escapeHtml(e.type)}">${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}</div>
+        </div>
+      ` : `
         <div class="planner-task ${escapeHtml(e.type)}" title="${escapeHtml(e.text)}" onclick="openEventoDetail('${e.id}')">
-          ${escapeHtml(e.text)}${e.image ? ' 📷' : ''}${e.link ? ' 🔗' : ''}
+          ${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}
         </div>
       `).join('')}
     </div>`).join('');
@@ -1694,7 +1699,7 @@ window.openEventoDetail = function(eventoId) {
   document.getElementById('eventoDetailContainer').innerHTML = `
     <span class="forum-tag">${meta.emoji} ${meta.label} · ${escapeHtml(evento.day)}</span>
     <h2 style="font-size:1.15rem;font-weight:800;margin:12px 0;color:var(--text-primary)">${escapeHtml(evento.text)}</h2>
-    ${evento.image ? `<img src="${escapeHtml(evento.image)}" alt="" style="width:100%;border-radius:12px;margin-bottom:14px;max-height:260px;object-fit:cover;" />` : ''}
+    ${evento.image ? `<img src="${escapeHtml(evento.image)}" alt="" style="width:100%;border-radius:12px;margin-bottom:14px;max-height:320px;object-fit:cover;object-position:${escapeHtml(evento.imagePosition || 'center')};" />` : ''}
     ${evento.description ? `<p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">${escapeHtml(evento.description)}</p>` : ''}
     ${evento.link ? `<a href="${escapeHtml(evento.link)}" target="_blank" rel="noopener noreferrer" class="comment-link">🔗 ${escapeHtml(evento.link)}</a>` : ''}
     ${isAdmin ? `
@@ -1723,6 +1728,7 @@ window.openEventoForm = function(eventoId) {
   document.getElementById('eventoTipo').value = evento ? evento.type : 'terapia';
   document.getElementById('eventoDescripcion').value = evento && evento.description ? evento.description : '';
   document.getElementById('eventoLink').value = evento && evento.link ? evento.link : '';
+  document.getElementById('eventoImagePosition').value = evento && evento.imagePosition ? evento.imagePosition : 'center';
 
   const preview = document.getElementById('eventoImagePreview');
   const img = document.getElementById('eventoPreviewImg');
@@ -1768,6 +1774,7 @@ document.getElementById('saveEventoBtn')?.addEventListener('click', () => {
   const type        = document.getElementById('eventoTipo')?.value;
   const description = document.getElementById('eventoDescripcion')?.value.trim();
   const link        = document.getElementById('eventoLink')?.value.trim();
+  const imagePosition = document.getElementById('eventoImagePosition')?.value || 'center';
   const image       = document.getElementById('eventoPreviewImg')?.src || '';
   const hasImage    = !document.getElementById('eventoImagePreview').classList.contains('hidden') && image;
 
@@ -1779,10 +1786,10 @@ document.getElementById('saveEventoBtn')?.addEventListener('click', () => {
   if (editingEventoId) {
     const idx = events.findIndex(e => e.id === editingEventoId);
     if (idx !== -1) {
-      events[idx] = { ...events[idx], text, day, type, description: description || null, link: link || null, image: hasImage ? image : null };
+      events[idx] = { ...events[idx], text, day, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition };
     }
   } else {
-    events.push({ id: 'evt-' + Date.now(), text, day, type, description: description || null, link: link || null, image: hasImage ? image : null });
+    events.push({ id: 'evt-' + Date.now(), text, day, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition });
   }
 
   savePlannerEvents(events);

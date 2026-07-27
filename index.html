@@ -333,7 +333,7 @@
   <!-- PLANIFICADOR MODAL -->
   <div class="tool-panel" id="panelPlanificador">
     <div class="panel-overlay" id="panelPlanOverlay"></div>
-    <div class="panel-content">
+    <div class="panel-content" style="max-width:980px;">
       <button class="panel-close" id="panelPlanClose">✕</button>
       <h2 class="panel-title">📅 Planificador Semanal</h2>
       <p class="panel-sub">Tocá un evento para ver el detalle. El equipo lo mantiene actualizado desde Moderación.</p>
@@ -706,6 +706,16 @@
             <img id="eventoPreviewImg" src="" alt="Vista previa" />
             <button class="reply-remove-img" onclick="removeEventoImage()" title="Quitar foto">✕</button>
           </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Encuadre de la foto</label>
+          <select class="planner-select full-w" id="eventoImagePosition">
+            <option value="center">Centrada</option>
+            <option value="top">Arriba</option>
+            <option value="bottom">Abajo</option>
+            <option value="left">Izquierda</option>
+            <option value="right">Derecha</option>
+          </select>
         </div>
         <div class="reg-group">
           <label class="reg-label">Enlace externo (opcional)</label>

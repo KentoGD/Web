@@ -473,6 +473,19 @@ section { padding: 90px 0; }
 .planner-task.rutina   { background: var(--gold-pale); border-left: 3px solid var(--gold); color: #7A5200; }
 .planner-task.ocio     { background: var(--purple-pale); border-left: 3px solid var(--purple); color: var(--purple); }
 .planner-task.descanso { background: var(--green-pale); border-left: 3px solid var(--green); color: var(--green); }
+
+.planner-task-photo {
+  cursor: pointer; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.planner-task-photo:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.planner-task-photo img { width: 100%; height: 72px; display: block; object-fit: cover; }
+.planner-task-photo-label { font-size: 0.66rem; padding: 5px 6px; line-height: 1.3; border-left: 3px solid transparent; }
+.planner-task-photo-label.terapia  { background: #E6F7F5; border-left-color: var(--teal); color: var(--teal); }
+.planner-task-photo-label.medico   { background: var(--blue-pale); border-left-color: var(--blue); color: var(--blue-dark); }
+.planner-task-photo-label.rutina   { background: var(--gold-pale); border-left-color: var(--gold); color: #7A5200; }
+.planner-task-photo-label.ocio     { background: var(--purple-pale); border-left-color: var(--purple); color: var(--purple); }
+.planner-task-photo-label.descanso { background: var(--green-pale); border-left-color: var(--green); color: var(--green); }
 .planner-add { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .planner-input {
   flex: 1; background: var(--bg-section); border: 2px solid var(--border);
