@@ -888,11 +888,31 @@ function syncForumPost(cu, previousForumPostId, wantsPublish, postData) {
   return undefined;
 }
 
-function buildForumPostData(notas, childMood, caregiverMood, energyVal) {
+// Formato requerido por <input type="datetime-local">, en hora local (no UTC).
+function toDatetimeLocalValue(ts) {
+  const d = new Date(ts);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Etiqueta legible para el post del foro ("Hoy, 09:30" / "Ayer, 18:20" / "23 jul, 14:10").
+function formatPostDateLabel(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const sameDay = (a, b) => a.toDateString() === b.toDateString();
+  if (sameDay(d, now)) return `Hoy, ${time}`;
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (sameDay(d, yesterday)) return `Ayer, ${time}`;
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ', ' + time;
+}
+
+function buildForumPostData(notas, childMood, caregiverMood, energyVal, timestamp) {
   const content = notas || '(Sin notas adicionales)';
   return {
     title: 'Registro: ' + (content.length > 45 ? content.substring(0, 45) + '...' : content),
-    content, childMood, caregiverMood, energy: energyVal + '/10'
+    content, childMood, caregiverMood, energy: energyVal + '/10',
+    timestamp, date: formatPostDateLabel(timestamp)
   };
 }
 
@@ -904,9 +924,8 @@ function openRegistro(arg) {
   const isEditing = arg && typeof arg === 'object';
   editingRecordId = isEditing ? arg.id : null;
 
-  const now = new Date();
-  const regFecha = document.getElementById('regFecha');
-  if (regFecha) regFecha.textContent = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const dateTimeEl = document.getElementById('regDateTime');
+  if (dateTimeEl) dateTimeEl.value = toDatetimeLocalValue(isEditing ? arg.timestamp : Date.now());
 
   const notasEl = document.getElementById('regNotas');
   if (notasEl) notasEl.value = isEditing ? (arg.notas || '') : '';
@@ -972,7 +991,7 @@ window.toggleForoRecord = function(recordId) {
   if (idx === -1) return;
   const rec = log[idx];
   const wantsPublish = !rec.publicadoEnForo;
-  const postData = buildForumPostData(rec.notas, rec.childMood, rec.caregiverMood, rec.energy);
+  const postData = buildForumPostData(rec.notas, rec.childMood, rec.caregiverMood, rec.energy, rec.timestamp);
   const forumPostId = syncForumPost(cu, rec.forumPostId, wantsPublish, postData);
   log[idx] = { ...rec, publicadoEnForo: wantsPublish, forumPostId };
   saveSituacionLog(log);
@@ -994,17 +1013,21 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const publicarForo     = document.getElementById('regPublicarForo')?.checked || false;
   const actividades      = [...document.querySelectorAll('#activityChecks input:checked')].map(cb => cb.value);
   const wantsPublish     = !!(notas && publicarForo);
+  const dateTimeVal      = document.getElementById('regDateTime')?.value;
+  const chosenTimestamp  = dateTimeVal ? new Date(dateTimeVal).getTime() : Date.now();
   const log = getSituacionLog();
+
+  if (isNaN(chosenTimestamp)) { showToast('La fecha y hora no son válidas', 'error'); return; }
 
   // MODO EDICIÓN: actualiza el registro existente y sincroniza su post del foro.
   if (editingRecordId) {
     const idx = log.findIndex(r => r.id === editingRecordId && r.userId === cu.id);
     if (idx === -1) { showToast('No se encontró el registro', 'error'); editingRecordId = null; closePanel('panelRegistro'); return; }
     const existing = log[idx];
-    const postData = buildForumPostData(notas, childMood, caregiverMood, energyVal);
+    const postData = buildForumPostData(notas, childMood, caregiverMood, energyVal, chosenTimestamp);
     const forumPostId = syncForumPost(cu, existing.forumPostId, wantsPublish, postData);
     log[idx] = {
-      ...existing, childMoodVal, caregiverMoodVal, childMood, caregiverMood,
+      ...existing, timestamp: chosenTimestamp, childMoodVal, caregiverMoodVal, childMood, caregiverMood,
       energy: energyVal, notas: notas || '', actividades, publicadoEnForo: wantsPublish, forumPostId
     };
     saveSituacionLog(log);
@@ -1018,10 +1041,10 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
 
   // MODO CREACIÓN: registro estructurado por usuario, siempre privado salvo
   // que se marque explícitamente publicarlo en el foro.
-  const forumPostId = wantsPublish ? syncForumPost(cu, undefined, true, buildForumPostData(notas, childMood, caregiverMood, energyVal)) : undefined;
+  const forumPostId = wantsPublish ? syncForumPost(cu, undefined, true, buildForumPostData(notas, childMood, caregiverMood, energyVal, chosenTimestamp)) : undefined;
   log.push({
     id: 'reg-' + Date.now(), userId: cu.id, userName: cu.name,
-    timestamp: Date.now(), childMoodVal, caregiverMoodVal,
+    timestamp: chosenTimestamp, childMoodVal, caregiverMoodVal,
     childMood, caregiverMood, energy: energyVal, notas: notas || '',
     actividades, publicadoEnForo: wantsPublish, forumPostId
   });

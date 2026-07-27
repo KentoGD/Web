@@ -367,8 +367,12 @@
     <div class="panel-content">
       <button class="panel-close" id="panelRegClose">✕</button>
       <h2 class="panel-title" id="panelRegTitle">📝 Registro Diario de Situación</h2>
-      <p class="panel-sub">Fecha: <strong id="regFecha"></strong></p>
+      <p class="panel-sub">Registrá cómo estuvo hoy, o ajustá la fecha si es de otro día</p>
       <div class="reg-form">
+        <div class="reg-group">
+          <label class="reg-label">Fecha y hora del registro</label>
+          <input type="datetime-local" class="planner-input" id="regDateTime" />
+        </div>
         <div class="reg-group">
           <label class="reg-label">¿Cómo se encuentra el niño hoy?</label>
           <div class="emoji-selector" id="childMood">
