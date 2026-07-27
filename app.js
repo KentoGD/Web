@@ -56,7 +56,9 @@ window.navigateTo = function(pageId) {
   const target = document.getElementById(pageId);
   if (target) {
     target.classList.add('active');
-    injectFooter(target);
+    // El hero ya centra su contenido con justify-content:center; el footer
+    // inyectado usa margin-top:auto y anularía ese centrado.
+    if (pageId !== 'dashboard') injectFooter(target);
   }
 
   // Update active nav link
