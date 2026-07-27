@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260727c" />
+  <link rel="stylesheet" href="styles.css?v=20260728" />
 </head>
 <body>
 
@@ -567,6 +567,8 @@
         <button class="nfilter" id="btnTabRiesgo" onclick="switchAdminTab('riesgo')">🚨 Casos de Riesgo</button>
         <button class="nfilter" id="btnTabNoticias" onclick="switchAdminTab('noticias')">📰 Noticias</button>
         <button class="nfilter" id="btnTabPlanner" onclick="switchAdminTab('planner')">📅 Planificador</button>
+        <button class="nfilter" id="btnTabAyudas" onclick="switchAdminTab('ayudas')">⚖️ Ayudas</button>
+        <button class="nfilter" id="btnTabAsesoria" onclick="switchAdminTab('asesoria')">🤝 Asesoría</button>
       </div>
 
       <!-- LISTA DE USUARIOS -->
@@ -627,6 +629,118 @@
         <div id="adminPlannerList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;">
           <!-- Populated by JS -->
         </div>
+      </div>
+
+      <!-- AYUDAS DE LA CALCULADORA -->
+      <div id="adminAyudasTab" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <p style="font-size:0.83rem;color:var(--text-secondary);max-width:420px;line-height:1.5;">Cada ayuda aparece en la Calculadora de Derechos solo si se cumplen sus condiciones. Deja una condición sin marcar para que valga cualquier valor.</p>
+          <button class="btn-primary sm" onclick="openAyudaForm()">+ Nueva Ayuda</button>
+        </div>
+
+        <!-- Formulario de alta / edición -->
+        <div id="ayudaFormWrap" class="hidden ayuda-form">
+          <input type="hidden" id="ayudaId" />
+          <div class="reg-group">
+            <label class="reg-label">Título</label>
+            <input type="text" class="planner-input full-w" id="ayudaTitulo" placeholder="Ej: 💶 Prestación por cuidados en el entorno familiar" />
+          </div>
+          <div class="reg-group">
+            <label class="reg-label">Descripción</label>
+            <textarea class="reg-textarea full-w" id="ayudaDesc" placeholder="Explica brevemente en qué consiste y qué hace falta."></textarea>
+          </div>
+
+          <div class="ayuda-cond-grid">
+            <div class="reg-group">
+              <label class="reg-label">Grado de discapacidad</label>
+              <div class="ayuda-checks" id="ayudaDisc">
+                <label class="act-check"><input type="checkbox" value="none" /> Sin reconocimiento</label>
+                <label class="act-check"><input type="checkbox" value="33-64" /> 33% – 64%</label>
+                <label class="act-check"><input type="checkbox" value="65-74" /> 65% – 74%</label>
+                <label class="act-check"><input type="checkbox" value="75+" /> 75% o más</label>
+              </div>
+            </div>
+            <div class="reg-group">
+              <label class="reg-label">Grado de dependencia</label>
+              <div class="ayuda-checks" id="ayudaDep">
+                <label class="act-check"><input type="checkbox" value="none" /> Sin grado</label>
+                <label class="act-check"><input type="checkbox" value="g1" /> Grado I</label>
+                <label class="act-check"><input type="checkbox" value="g2" /> Grado II</label>
+                <label class="act-check"><input type="checkbox" value="g3" /> Grado III</label>
+              </div>
+            </div>
+            <div class="reg-group">
+              <label class="reg-label">Situación laboral</label>
+              <div class="ayuda-checks" id="ayudaLab">
+                <label class="act-check"><input type="checkbox" value="empleado" /> Cuenta ajena</label>
+                <label class="act-check"><input type="checkbox" value="autonomo" /> Autónomo/a</label>
+                <label class="act-check"><input type="checkbox" value="desempleo" /> Desempleo</label>
+                <label class="act-check"><input type="checkbox" value="excedencia" /> Excedencia</label>
+              </div>
+            </div>
+            <div class="reg-group">
+              <label class="reg-label">Edad del menor (deja vacío si da igual)</label>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <input type="number" class="planner-input" id="ayudaEdadMin" placeholder="Desde" min="0" max="30" style="width:100%" />
+                <input type="number" class="planner-input" id="ayudaEdadMax" placeholder="Hasta" min="0" max="30" style="width:100%" />
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+            <button class="btn-secondary sm" onclick="closeAyudaForm()">Cancelar</button>
+            <button class="btn-primary sm" style="flex:1" onclick="saveAyudaForm()">💾 Guardar ayuda</button>
+          </div>
+        </div>
+
+        <div id="adminAyudasList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- SERVICIO DE ASESORÍA -->
+      <div id="adminAsesoriaTab" class="hidden">
+        <div style="background:var(--teal-pale);border:2px solid rgba(98,184,176,0.35);border-radius:12px;padding:16px;margin-bottom:16px;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">🤝 Servicio de asesoría y acompañamiento</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">Este bloque se muestra al final de la Calculadora de Derechos, cuando la familia ya ha visto sus ayudas. Aquí defines qué se ofrece y cómo te contactan.</p>
+        </div>
+
+        <label class="reg-privacy-toggle">
+          <input type="checkbox" id="asesActivo" />
+          Mostrar el servicio en la calculadora
+        </label>
+
+        <div class="reg-group">
+          <label class="reg-label">Título</label>
+          <input type="text" class="planner-input full-w" id="asesTitulo" />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Descripción</label>
+          <textarea class="reg-textarea full-w" id="asesDesc"></textarea>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Qué incluye (una línea por servicio)</label>
+          <textarea class="reg-textarea full-w" id="asesIncluye" style="min-height:130px" placeholder="Gestión de solicitudes y renovaciones&#10;Recordatorios de plazos y citas&#10;Seguimiento de la evolución de tu hijo/a"></textarea>
+        </div>
+        <div class="ayuda-cond-grid">
+          <div class="reg-group">
+            <label class="reg-label">Precio o tarifa</label>
+            <input type="text" class="planner-input full-w" id="asesPrecio" placeholder="Ej: 45 €/mes · Primera sesión gratuita" />
+          </div>
+          <div class="reg-group">
+            <label class="reg-label">Texto del botón</label>
+            <input type="text" class="planner-input full-w" id="asesCtaTexto" placeholder="Quiero informarme" />
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Enlace de contacto (correo, WhatsApp o web)</label>
+          <input type="text" class="planner-input full-w" id="asesCtaEnlace" placeholder="mailto:info@nana.org  ·  https://wa.me/34600000000" />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Nota al pie (opcional)</label>
+          <input type="text" class="planner-input full-w" id="asesNota" placeholder="Ej: Servicio ofrecido por NANA, sin coste para socios." />
+        </div>
+        <button class="btn-primary full" onclick="saveAsesoriaForm()">💾 Guardar servicio</button>
       </div>
     </div>
   </div>
@@ -1060,6 +1174,6 @@
   <!-- TOAST NOTIFICATIONS -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="app.js?v=20260727c"></script>
+  <script src="app.js?v=20260728"></script>
 </body>
 </html>

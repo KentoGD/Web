@@ -784,6 +784,47 @@ section { padding: 90px 0; }
 }
 .calc-disclaimer strong { color: var(--text-primary); }
 
+/* Bloque del servicio de asesoría (al final de la calculadora) */
+.asesoria-box {
+  margin-top: 22px; padding: 22px;
+  background: linear-gradient(160deg, var(--teal-pale), var(--blue-pale));
+  border: 2px solid var(--teal); border-radius: var(--radius);
+}
+.asesoria-tag {
+  display: inline-block; background: var(--teal); color: white;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 99px; margin-bottom: 12px;
+}
+.asesoria-title {
+  font-family: 'Baloo 2', 'Quicksand', sans-serif;
+  font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; line-height: 1.35;
+}
+.asesoria-desc { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.6; }
+.asesoria-list { list-style: none; margin: 14px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.asesoria-list li {
+  font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;
+  padding-left: 26px; position: relative;
+}
+.asesoria-list li::before {
+  content: '✓'; position: absolute; left: 0; top: 0;
+  color: var(--teal); font-weight: 800;
+}
+.asesoria-precio {
+  margin-top: 16px; font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+}
+.asesoria-cta { margin-top: 16px; width: 100%; text-align: center; }
+.asesoria-nota { margin-top: 10px; font-size: 0.76rem; color: var(--text-muted); }
+
+/* Formulario de ayudas en el panel de moderación */
+.ayuda-form {
+  background: var(--bg-section); border: 1px dashed var(--border-hover);
+  border-radius: var(--radius-sm); padding: 18px; margin-bottom: 18px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.ayuda-cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ayuda-checks { display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 620px) { .ayuda-cond-grid { grid-template-columns: 1fr; } }
+
 /* CHAT */
 .chat-box { height: 260px; background: var(--bg-section); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .chat-msg { max-width: 80%; font-size: 0.85rem; padding: 10px 14px; border-radius: 12px; line-height: 1.4; flex-shrink: 0; }

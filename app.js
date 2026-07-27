@@ -1098,23 +1098,179 @@ window.openAdminPanel = function() {
 document.getElementById('panelAdminClose')?.addEventListener('click',  () => closePanel('panelAdmin'));
 document.getElementById('panelAdminOverlay')?.addEventListener('click', () => closePanel('panelAdmin'));
 
+// Cada pestaña: clave, id del botón, id del panel y qué pintar al entrar.
+const ADMIN_TABS = [
+  { key:'users',    btn:'btnTabUsers',    panel:'adminUsersTab' },
+  { key:'posts',    btn:'btnTabPosts',    panel:'adminPostsTab' },
+  { key:'portada',  btn:'btnTabPortada',  panel:'adminPortadaTab',  render:() => renderAdminPortada() },
+  { key:'riesgo',   btn:'btnTabRiesgo',   panel:'adminRiesgoTab',   render:() => renderAdminRiesgo() },
+  { key:'noticias', btn:'btnTabNoticias', panel:'adminNoticiasTab', render:() => renderAdminNoticias() },
+  { key:'planner',  btn:'btnTabPlanner',  panel:'adminPlannerTab',  render:() => renderAdminPlanner() },
+  { key:'ayudas',   btn:'btnTabAyudas',   panel:'adminAyudasTab',   render:() => renderAdminAyudas() },
+  { key:'asesoria', btn:'btnTabAsesoria', panel:'adminAsesoriaTab', render:() => cargarAsesoriaForm() },
+];
+
 window.switchAdminTab = function(tab) {
-  document.getElementById('btnTabUsers').classList.toggle('active', tab === 'users');
-  document.getElementById('btnTabPosts').classList.toggle('active', tab === 'posts');
-  document.getElementById('btnTabPortada').classList.toggle('active', tab === 'portada');
-  document.getElementById('btnTabRiesgo').classList.toggle('active', tab === 'riesgo');
-  document.getElementById('btnTabNoticias').classList.toggle('active', tab === 'noticias');
-  document.getElementById('btnTabPlanner').classList.toggle('active', tab === 'planner');
-  document.getElementById('adminUsersTab').classList.toggle('hidden', tab !== 'users');
-  document.getElementById('adminPostsTab').classList.toggle('hidden', tab !== 'posts');
-  document.getElementById('adminPortadaTab').classList.toggle('hidden', tab !== 'portada');
-  document.getElementById('adminRiesgoTab').classList.toggle('hidden', tab !== 'riesgo');
-  document.getElementById('adminNoticiasTab').classList.toggle('hidden', tab !== 'noticias');
-  document.getElementById('adminPlannerTab').classList.toggle('hidden', tab !== 'planner');
-  if (tab === 'portada') renderAdminPortada();
-  if (tab === 'riesgo') renderAdminRiesgo();
-  if (tab === 'noticias') renderAdminNoticias();
-  if (tab === 'planner') renderAdminPlanner();
+  ADMIN_TABS.forEach(t => {
+    document.getElementById(t.btn)?.classList.toggle('active', t.key === tab);
+    document.getElementById(t.panel)?.classList.toggle('hidden', t.key !== tab);
+  });
+  ADMIN_TABS.find(t => t.key === tab)?.render?.();
+};
+
+// =============================================
+// MODERACIÓN — AYUDAS DE LA CALCULADORA
+// =============================================
+const AYUDA_ETIQUETAS = {
+  'none':'Sin reconocimiento', '33-64':'33-64%', '65-74':'65-74%', '75+':'75%+',
+  'g1':'Grado I', 'g2':'Grado II', 'g3':'Grado III',
+  'empleado':'Cuenta ajena', 'autonomo':'Autónomo/a', 'desempleo':'Desempleo', 'excedencia':'Excedencia',
+};
+
+function resumenCondiciones(a) {
+  const partes = [];
+  if (a.disc?.length) partes.push('Discapacidad: ' + a.disc.map(v => AYUDA_ETIQUETAS[v] || v).join(', '));
+  if (a.dep?.length)  partes.push('Dependencia: ' + a.dep.map(v => AYUDA_ETIQUETAS[v] || v).join(', '));
+  if (a.lab?.length)  partes.push('Laboral: ' + a.lab.map(v => AYUDA_ETIQUETAS[v] || v).join(', '));
+  const min = a.edadMin, max = a.edadMax;
+  if (min !== null && min !== undefined && min !== '' && max !== null && max !== undefined && max !== '') partes.push(`Edad: ${min}-${max} años`);
+  else if (min !== null && min !== undefined && min !== '') partes.push(`Edad: desde ${min} años`);
+  else if (max !== null && max !== undefined && max !== '') partes.push(`Edad: hasta ${max} años`);
+  return partes.length ? partes.join(' · ') : 'Se muestra siempre';
+}
+
+function renderAdminAyudas() {
+  const list = document.getElementById('adminAyudasList');
+  if (!list) return;
+  const ayudas = getAyudas();
+  if (!ayudas.length) {
+    list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted)">Todavía no hay ayudas. Creá la primera con "+ Nueva Ayuda".</p>';
+    return;
+  }
+  list.innerHTML = ayudas.map(a => `
+    <div class="admin-user-row" style="align-items:flex-start;${a.activa === false ? 'opacity:0.55;' : ''}">
+      <div class="admin-user-info" style="flex:1">
+        <strong>${escapeHtml(a.titulo)}</strong>
+        <span style="display:block;font-size:0.78rem;color:var(--text-muted);margin:4px 0">${escapeHtml(resumenCondiciones(a))}</span>
+        <span style="display:block;font-size:0.8rem">${escapeHtml((a.desc || '').slice(0, 110))}${(a.desc || '').length > 110 ? '…' : ''}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn-micro" onclick="toggleAyudaActiva('${a.id}')">${a.activa === false ? '👁️ Activar' : '🚫 Desactivar'}</button>
+        <button class="btn-micro" onclick="openAyudaForm('${a.id}')">✏️ Editar</button>
+        <button class="btn-micro" style="color:var(--red)" onclick="deleteAyuda('${a.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function marcarChecks(contenedorId, valores) {
+  document.querySelectorAll(`#${contenedorId} input[type=checkbox]`).forEach(c => {
+    c.checked = (valores || []).includes(c.value);
+  });
+}
+function leerChecks(contenedorId) {
+  return [...document.querySelectorAll(`#${contenedorId} input[type=checkbox]:checked`)].map(c => c.value);
+}
+
+window.openAyudaForm = function(id) {
+  const a = id ? getAyudas().find(x => x.id === id) : null;
+  document.getElementById('ayudaId').value      = a ? a.id : '';
+  document.getElementById('ayudaTitulo').value  = a ? a.titulo : '';
+  document.getElementById('ayudaDesc').value    = a ? a.desc : '';
+  document.getElementById('ayudaEdadMin').value = (a && a.edadMin !== null && a.edadMin !== undefined) ? a.edadMin : '';
+  document.getElementById('ayudaEdadMax').value = (a && a.edadMax !== null && a.edadMax !== undefined) ? a.edadMax : '';
+  marcarChecks('ayudaDisc', a ? a.disc : []);
+  marcarChecks('ayudaDep',  a ? a.dep  : []);
+  marcarChecks('ayudaLab',  a ? a.lab  : []);
+  document.getElementById('ayudaFormWrap').classList.remove('hidden');
+};
+
+window.closeAyudaForm = function() {
+  document.getElementById('ayudaFormWrap').classList.add('hidden');
+};
+
+window.saveAyudaForm = function() {
+  const titulo = document.getElementById('ayudaTitulo').value.trim();
+  const desc   = document.getElementById('ayudaDesc').value.trim();
+  if (!titulo) { showToast('Ponle un título a la ayuda', 'error'); return; }
+
+  const min = document.getElementById('ayudaEdadMin').value.trim();
+  const max = document.getElementById('ayudaEdadMax').value.trim();
+  if (min !== '' && max !== '' && Number(min) > Number(max)) {
+    showToast('La edad "desde" no puede ser mayor que la edad "hasta"', 'error');
+    return;
+  }
+
+  const id = document.getElementById('ayudaId').value;
+  const ayudas = [...getAyudas()];
+  const datos = {
+    titulo, desc,
+    disc: leerChecks('ayudaDisc'),
+    dep:  leerChecks('ayudaDep'),
+    lab:  leerChecks('ayudaLab'),
+    edadMin: min === '' ? null : Number(min),
+    edadMax: max === '' ? null : Number(max),
+  };
+
+  if (id) {
+    const i = ayudas.findIndex(a => a.id === id);
+    if (i !== -1) ayudas[i] = { ...ayudas[i], ...datos };
+  } else {
+    ayudas.push({ id: 'a-' + Date.now(), activa: true, ...datos });
+  }
+  saveAyudas(ayudas);
+  closeAyudaForm();
+  renderAdminAyudas();
+  showToast(id ? '✅ Ayuda actualizada' : '✅ Ayuda creada', 'success');
+};
+
+window.toggleAyudaActiva = function(id) {
+  const ayudas = getAyudas().map(a => a.id === id ? { ...a, activa: a.activa === false } : a);
+  saveAyudas(ayudas);
+  renderAdminAyudas();
+};
+
+window.deleteAyuda = function(id) {
+  const a = getAyudas().find(x => x.id === id);
+  if (!confirm(`¿Eliminar la ayuda "${a ? a.titulo : ''}"? Dejará de aparecer en la calculadora.`)) return;
+  saveAyudas(getAyudas().filter(x => x.id !== id));
+  renderAdminAyudas();
+  showToast('🗑️ Ayuda eliminada', 'info');
+};
+
+// =============================================
+// MODERACIÓN — SERVICIO DE ASESORÍA
+// =============================================
+function cargarAsesoriaForm() {
+  const a = getAsesoria();
+  document.getElementById('asesActivo').checked = !!a.activo;
+  document.getElementById('asesTitulo').value   = a.titulo || '';
+  document.getElementById('asesDesc').value     = a.desc || '';
+  document.getElementById('asesIncluye').value  = (a.incluye || []).join('\n');
+  document.getElementById('asesPrecio').value   = a.precio || '';
+  document.getElementById('asesCtaTexto').value = a.ctaTexto || '';
+  document.getElementById('asesCtaEnlace').value= a.ctaEnlace || '';
+  document.getElementById('asesNota').value     = a.nota || '';
+}
+
+window.saveAsesoriaForm = function() {
+  const enlace = document.getElementById('asesCtaEnlace').value.trim();
+  // Solo se aceptan enlaces navegables: si no, el botón no se pintaría en la
+  // calculadora y el equipo no entendería por qué.
+  if (enlace && !/^(https?:|mailto:|tel:)/i.test(enlace)) {
+    showToast('El enlace debe empezar por https://, mailto: o tel:', 'error', 5000);
+    return;
+  }
+  saveAsesoria({
+    activo:   document.getElementById('asesActivo').checked,
+    titulo:   document.getElementById('asesTitulo').value.trim(),
+    desc:     document.getElementById('asesDesc').value.trim(),
+    incluye:  document.getElementById('asesIncluye').value.split('\n').map(s => s.trim()).filter(Boolean),
+    precio:   document.getElementById('asesPrecio').value.trim(),
+    ctaTexto: document.getElementById('asesCtaTexto').value.trim(),
+    ctaEnlace: enlace,
+    nota:     document.getElementById('asesNota').value.trim(),
+  });
+  showToast('✅ Servicio de asesoría actualizado', 'success');
 };
 
 function renderAdminUsers() {
@@ -1998,6 +2154,79 @@ document.getElementById('btnDerechos')?.addEventListener('click', () => {
 document.getElementById('panelDerechosClose')?.addEventListener('click',  () => closePanel('panelDerechos'));
 document.getElementById('panelDerechosOverlay')?.addEventListener('click',() => closePanel('panelDerechos'));
 
+// Las ayudas ya no están escritas a mano en el código: son datos que el equipo
+// de moderación puede crear, editar o desactivar. Cada una lleva las condiciones
+// que debe cumplir la familia; una condición vacía significa "cualquier valor".
+const SEED_AYUDAS = [
+  { id:'a-irpf',      titulo:'💵 Deducción IRPF por descendiente con discapacidad', desc:'Hasta 1.200 €/año, que se puede cobrar de forma anticipada a 100 €/mes.', disc:['33-64','65-74','75+'], dep:[], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-tarjeta',   titulo:'🚌 Tarjeta de estacionamiento y transporte adaptado', desc:'Reserva de plaza y descuentos en transporte público. La tarjeta de estacionamiento requiere baremo de movilidad reducida.', disc:['33-64','65-74','75+'], dep:[], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-hijocargo', titulo:'👶 Asignación por hijo a cargo con discapacidad', desc:'Prestación de la Seguridad Social, sin límite de ingresos cuando la discapacidad es del 65% o superior.', disc:['65-74','75+'], dep:[], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-tercera',   titulo:'🤝 Complemento de tercera persona', desc:'Complemento adicional cuando se acredita la necesidad de ayuda de otra persona para las actividades básicas.', disc:['75+'], dep:[], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-pecef',     titulo:'💶 Prestación económica por cuidados en el entorno familiar (PECEF)', desc:'Cuantía mensual para el cuidador/a no profesional. El importe depende del grado y de la capacidad económica.', disc:[], dep:['g2','g3'], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-convenio',  titulo:'🛡️ Convenio especial de cuidadores no profesionales', desc:'La Seguridad Social asume la cotización del cuidador/a sin coste para la familia.', disc:[], dep:['g2','g3'], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-sad',       titulo:'🏡 Servicio de Ayuda a Domicilio (SAD)', desc:'Horas mensuales de apoyo profesional en el hogar, según el Programa Individual de Atención.', disc:[], dep:['g1'], lab:[], edadMin:null, edadMax:null, activa:true },
+  { id:'a-temprana',  titulo:'🧩 Atención Temprana', desc:'Valoración y tratamiento gratuito en un CDIAT (logopedia, fisioterapia, estimulación) para la franja de 0 a 6 años.', disc:[], dep:[], lab:[], edadMin:0, edadMax:5, activa:true },
+  { id:'a-becas',     titulo:'🎓 Becas para alumnado con necesidad específica de apoyo educativo', desc:'Convocatoria anual del Ministerio de Educación: transporte, comedor, material y reeducación pedagógica o del lenguaje.', disc:[], dep:[], lab:[], edadMin:3, edadMax:18, activa:true },
+  { id:'a-apoyos',    titulo:'🏫 Apoyos escolares (PT y AL)', desc:'Dictamen de escolarización y apoyo de Pedagogía Terapéutica y Audición y Lenguaje en el centro educativo.', disc:[], dep:[], lab:[], edadMin:3, edadMax:18, activa:true },
+  { id:'a-mayoria',   titulo:'⚠️ Revisión al cumplir la mayoría de edad', desc:'A partir de los 18 conviene revisar los apoyos a la capacidad jurídica y las prestaciones de adultos.', disc:[], dep:[], lab:[], edadMin:19, edadMax:null, activa:true },
+  { id:'a-jornada',   titulo:'⏱️ Reducción de jornada por cuidado de menor', desc:'Reducción de jornada con disminución proporcional del salario, y excedencia por cuidado de familiares con reserva del puesto.', disc:[], dep:[], lab:['empleado'], edadMin:null, edadMax:null, activa:true },
+  { id:'a-autonomo',  titulo:'🧾 Bonificación en la cuota de autónomos por conciliación', desc:'Bonificación de la cuota durante el cuidado de menores a cargo, cumpliendo los requisitos de contratación y alta.', disc:[], dep:[], lab:['autonomo'], edadMin:null, edadMax:null, activa:true },
+  { id:'a-excedencia',titulo:'📈 Cotización durante la excedencia por cuidado', desc:'Los primeros años de excedencia por cuidado de un menor se consideran cotizados de forma efectiva.', disc:[], dep:[], lab:['excedencia'], edadMin:null, edadMax:null, activa:true },
+  { id:'a-imv',       titulo:'💠 Ingreso Mínimo Vital y rentas autonómicas', desc:'Revisa el IMV y la renta mínima de tu comunidad: la discapacidad en la unidad de convivencia incrementa la cuantía.', disc:[], dep:[], lab:['desempleo'], edadMin:null, edadMax:null, activa:true },
+];
+
+let _ayudasCache = null;
+function getAyudas() {
+  if (_ayudasCache) return _ayudasCache;
+  const data = localStorage.getItem('cuidapp_ayudas');
+  _ayudasCache = data ? JSON.parse(data) : SEED_AYUDAS;
+  if (!data) localStorage.setItem('cuidapp_ayudas', JSON.stringify(_ayudasCache));
+  return _ayudasCache;
+}
+function saveAyudas(ayudas) { _ayudasCache = ayudas; localStorage.setItem('cuidapp_ayudas', JSON.stringify(ayudas)); }
+
+const SEED_ASESORIA = {
+  activo: true,
+  titulo: '¿Prefieres que te acompañemos en todo el proceso?',
+  desc: 'Sabemos que entre solicitudes, plazos, informes y citas se va mucha energía. Con el servicio de asesoría de NANA te asignamos una persona de referencia que lleva toda la gestión por vosotros y hace seguimiento de la evolución de vuestro hijo o hija.',
+  incluye: [
+    'Gestión completa de solicitudes, renovaciones y recursos de las ayudas',
+    'Avisos de plazos, citas y revisiones para que no se pase ninguno',
+    'Seguimiento de la evolución y preparación de informes para el colegio y los equipos',
+    'Revisión periódica de nuevas ayudas a las que podáis acceder',
+    'Contacto directo con vuestra asesora para dudas del día a día',
+  ],
+  precio: 'Escríbenos y te contamos las tarifas · Primera consulta sin compromiso',
+  ctaTexto: 'Quiero informarme',
+  ctaEnlace: 'mailto:info@cuidapp.es',
+  nota: '',
+};
+
+let _asesoriaCache = null;
+function getAsesoria() {
+  if (_asesoriaCache) return _asesoriaCache;
+  const data = localStorage.getItem('cuidapp_asesoria');
+  _asesoriaCache = data ? JSON.parse(data) : SEED_ASESORIA;
+  if (!data) localStorage.setItem('cuidapp_asesoria', JSON.stringify(_asesoriaCache));
+  return _asesoriaCache;
+}
+function saveAsesoria(a) { _asesoriaCache = a; localStorage.setItem('cuidapp_asesoria', JSON.stringify(a)); }
+
+// Una ayuda encaja si cumple TODAS sus condiciones. Las listas vacías no filtran.
+function ayudaAplica(a, { disc, dep, lab, edad }) {
+  if (a.activa === false) return false;
+  if (a.disc?.length && !a.disc.includes(disc)) return false;
+  if (a.dep?.length  && !a.dep.includes(dep))   return false;
+  if (a.lab?.length  && !a.lab.includes(lab))   return false;
+  if (a.edadMin !== null && a.edadMin !== undefined && a.edadMin !== '') {
+    if (isNaN(edad) || edad < Number(a.edadMin)) return false;
+  }
+  if (a.edadMax !== null && a.edadMax !== undefined && a.edadMax !== '') {
+    if (isNaN(edad) || edad > Number(a.edadMax)) return false;
+  }
+  return true;
+}
+
 window.calcNextStep = function(step) {
   document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
   document.querySelector(`.calc-step[data-step="${step}"]`)?.classList.remove('hidden');
@@ -2014,49 +2243,10 @@ window.calcularPrestaciones = function() {
   const dep  = document.getElementById('calcDependencia').value;
   const lab  = document.getElementById('calcLaboral').value;
   const edad = parseInt(document.getElementById('calcEdad').value, 10);
-  const results = [];
 
-  if (disc !== 'none') {
-    results.push({ title:'💵 Deducción IRPF por descendiente con discapacidad', desc:'Hasta 1.200 €/año, que se puede cobrar de forma anticipada a 100 €/mes.' });
-    results.push({ title:'🚌 Tarjeta de estacionamiento y transporte adaptado', desc:'Reserva de plaza y descuentos en transporte público. La tarjeta de estacionamiento requiere baremo de movilidad reducida.' });
-  }
-  if (disc === '65-74' || disc === '75+') {
-    results.push({ title:'👶 Asignación por hijo a cargo con discapacidad', desc:'Prestación de la Seguridad Social, sin límite de ingresos cuando la discapacidad es del 65% o superior.' });
-  }
-  if (disc === '75+') {
-    results.push({ title:'🤝 Complemento de tercera persona', desc:'Complemento adicional cuando se acredita la necesidad de ayuda de otra persona para las actividades básicas.' });
-  }
-
-  if (dep === 'g2' || dep === 'g3') {
-    results.push({ title:'💶 Prestación económica por cuidados en el entorno familiar (PECEF)', desc:'Cuantía mensual para el cuidador/a no profesional. El importe depende del grado y de la capacidad económica.' });
-    results.push({ title:'🛡️ Convenio especial de cuidadores no profesionales', desc:'La Seguridad Social asume la cotización del cuidador/a sin coste para la familia.' });
-  } else if (dep === 'g1') {
-    results.push({ title:'🏡 Servicio de Ayuda a Domicilio (SAD)', desc:'Horas mensuales de apoyo profesional en el hogar, según el Programa Individual de Atención.' });
-  }
-
-  // La edad del menor sí condiciona varios recursos
-  if (!isNaN(edad)) {
-    if (edad < 6) {
-      results.push({ title:'🧩 Atención Temprana', desc:`Con ${edad} años entra en la franja de 0 a 6: valoración y tratamiento gratuito en un CDIAT (logopedia, fisioterapia, estimulación).` });
-    }
-    if (edad >= 3 && edad <= 18) {
-      results.push({ title:'🎓 Becas y ayudas para alumnado con necesidad específica de apoyo educativo', desc:'Convocatoria anual del Ministerio de Educación: transporte, comedor, material y reeducación pedagógica o del lenguaje.' });
-      results.push({ title:'🏫 Apoyos escolares (PT y AL)', desc:'Dictamen de escolarización y apoyo de Pedagogía Terapéutica y Audición y Lenguaje en el centro educativo.' });
-    }
-    if (edad > 18) {
-      results.push({ title:'⚠️ Revisión al cumplir la mayoría de edad', desc:'A partir de los 18 conviene revisar la incapacitación/apoyos a la capacidad jurídica y las prestaciones de adultos.' });
-    }
-  }
-
-  if (lab === 'empleado') {
-    results.push({ title:'⏱️ Reducción de jornada por cuidado de menor', desc:'Reducción de jornada con disminución proporcional del salario, y excedencia por cuidado de familiares con reserva del puesto.' });
-  } else if (lab === 'autonomo') {
-    results.push({ title:'🧾 Bonificación en la cuota de autónomos por conciliación', desc:'Bonificación de la cuota durante el cuidado de menores a cargo, cumpliendo los requisitos de contratación y alta.' });
-  } else if (lab === 'excedencia') {
-    results.push({ title:'📈 Cotización durante la excedencia por cuidado', desc:'Los primeros años de excedencia por cuidado de un menor se consideran cotizados de forma efectiva.' });
-  } else if (lab === 'desempleo') {
-    results.push({ title:'💠 Ingreso Mínimo Vital y rentas autonómicas', desc:'Revisa el IMV y la renta mínima de tu comunidad: la discapacidad en la unidad de convivencia incrementa la cuantía.' });
-  }
+  const results = getAyudas()
+    .filter(a => ayudaAplica(a, { disc, dep, lab, edad }))
+    .map(a => ({ title: a.titulo, desc: a.desc }));
 
   if (results.length === 0) {
     results.push({ title:'ℹ️ Orientación inicial', desc:'Solicita la valoración de discapacidad en el Centro Base de tu localidad: es la puerta de entrada al resto de ayudas.' });
@@ -2069,6 +2259,7 @@ window.calcularPrestaciones = function() {
     <h3 style="color:var(--blue-dark);margin-bottom:16px">Ayudas orientativas (${results.length})</h3>
     ${results.map(r => `<div class="calc-result-item"><h4>${escapeHtml(r.title)}</h4><p>${escapeHtml(r.desc)}</p></div>`).join('')}
     <p class="calc-disclaimer">⚠️ Este listado es <strong>orientativo</strong> y no sustituye a una valoración oficial. Las cuantías y requisitos cambian según la comunidad autónoma y la situación económica de la familia. Confírmalo en los servicios sociales de tu ayuntamiento o en el Centro Base.</p>
+    ${renderAsesoriaBloque()}
     <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="calcNextStep(1)">🔄 Recalcular</button>
       <button class="btn-primary" style="flex:1" onclick="descargarInformeDerechos()">📥 Descargar informe</button>
@@ -2076,6 +2267,25 @@ window.calcularPrestaciones = function() {
   document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
   resDiv.classList.remove('hidden');
 };
+
+// Bloque del servicio de asesoría, al final del resultado de la calculadora.
+// Todo su contenido lo edita el equipo desde Moderación → Asesoría.
+function renderAsesoriaBloque() {
+  const a = getAsesoria();
+  if (!a.activo) return '';
+  const enlace = (a.ctaEnlace || '').trim();
+  const seguro = /^(https?:|mailto:|tel:)/i.test(enlace) ? enlace : '';
+  return `
+    <div class="asesoria-box">
+      <span class="asesoria-tag">🤝 Servicio de acompañamiento</span>
+      <h4 class="asesoria-title">${escapeHtml(a.titulo || '')}</h4>
+      <p class="asesoria-desc">${escapeHtml(a.desc || '')}</p>
+      ${(a.incluye && a.incluye.length) ? `<ul class="asesoria-list">${a.incluye.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
+      ${a.precio ? `<p class="asesoria-precio">${escapeHtml(a.precio)}</p>` : ''}
+      ${seguro ? `<a class="btn-primary asesoria-cta" href="${escapeHtml(seguro)}" target="_blank" rel="noopener noreferrer">${escapeHtml(a.ctaTexto || 'Quiero informarme')}</a>` : ''}
+      ${a.nota ? `<p class="asesoria-nota">${escapeHtml(a.nota)}</p>` : ''}
+    </div>`;
+}
 
 // Genera y descarga de verdad un informe con el resultado (antes el botón solo
 // mostraba un aviso de "Descargando..." pero no descargaba ningún archivo).
@@ -2089,6 +2299,8 @@ window.descargarInformeDerechos = function() {
  h1{color:#2B4E6B} h2{font-size:1rem;margin:0 0 4px}
  .item{background:#EDF3FA;border-left:4px solid #62B8B0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
  .item p{margin:0;font-size:0.92rem;color:#5A7290}
+ .asesoria{background:#E9F4F3;border:2px solid #62B8B0;border-radius:12px;padding:18px;margin-top:26px}
+ .asesoria ul{margin:10px 0 0 18px;font-size:0.9rem;color:#5A7290}
  .nota{background:#FBF3E7;border:1px solid #DDB57C;border-radius:10px;padding:14px;font-size:0.88rem;margin-top:24px}
  @media print{ body{margin:0} }
 </style></head><body>
@@ -2096,6 +2308,15 @@ window.descargarInformeDerechos = function() {
 <p><strong>NANA</strong> — Núcleo de Acompañamiento y Necesidades del Autismo<br>
 Fecha: ${fecha}${!isNaN(edad) ? ` · Edad del menor: ${edad} años` : ''}</p>
 ${results.map(r => `<div class="item"><h2>${escapeHtml(r.title)}</h2><p>${escapeHtml(r.desc)}</p></div>`).join('')}
+${(() => {
+  const a = getAsesoria();
+  if (!a.activo) return '';
+  return `<div class="asesoria"><h2>${escapeHtml(a.titulo || '')}</h2>
+    <p>${escapeHtml(a.desc || '')}</p>
+    ${(a.incluye && a.incluye.length) ? `<ul>${a.incluye.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
+    ${a.precio ? `<p><strong>${escapeHtml(a.precio)}</strong></p>` : ''}
+    ${a.ctaEnlace ? `<p>Contacto: ${escapeHtml(a.ctaEnlace.replace(/^mailto:/, ''))}</p>` : ''}</div>`;
+})()}
 <div class="nota">⚠️ Listado <strong>orientativo</strong>. No sustituye a una valoración oficial: las cuantías y requisitos cambian según la comunidad autónoma y la situación económica. Confírmalo en los servicios sociales de tu ayuntamiento o en el Centro Base.</div>
 <p style="margin-top:20px;font-size:0.85rem;color:#93A6BE">Para guardarlo como PDF, abre este archivo e imprime eligiendo "Guardar como PDF".</p>
 </body></html>`;
