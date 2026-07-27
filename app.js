@@ -1673,8 +1673,8 @@ function renderPlanner() {
       <div class="planner-day-header">${day}</div>
       ${events.filter(e => e.day === day).map(e => e.image ? `
         <div class="planner-task-photo" onclick="openEventoDetail('${e.id}')" title="${escapeHtml(e.text)}">
-          <img src="${escapeHtml(e.image)}" alt="" style="object-position:${escapeHtml(e.imagePosition || 'center')}" />
           <div class="planner-task-photo-label ${escapeHtml(e.type)}">${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}</div>
+          <img src="${escapeHtml(e.image)}" alt="" style="object-position:${escapeHtml(e.imagePosition || 'center')}" />
         </div>
       ` : `
         <div class="planner-task ${escapeHtml(e.type)}" title="${escapeHtml(e.text)}" onclick="openEventoDetail('${e.id}')">
