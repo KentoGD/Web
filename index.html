@@ -545,6 +545,7 @@
         <button class="nfilter" id="btnTabPosts" onclick="switchAdminTab('posts')">📝 Publicaciones</button>
         <button class="nfilter" id="btnTabPortada" onclick="switchAdminTab('portada')">🏠 Familia en Portada</button>
         <button class="nfilter" id="btnTabRiesgo" onclick="switchAdminTab('riesgo')">🚨 Casos de Riesgo</button>
+        <button class="nfilter" id="btnTabNoticias" onclick="switchAdminTab('noticias')">📰 Noticias</button>
       </div>
 
       <!-- LISTA DE USUARIOS -->
@@ -584,8 +585,75 @@
           <!-- Populated by JS -->
         </div>
       </div>
+
+      <!-- GESTIÓN DE NOTICIAS -->
+      <div id="adminNoticiasTab" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <p style="font-size:0.83rem;color:var(--text-secondary);max-width:420px;line-height:1.5;">Creá, editá, destacá o eliminá noticias. La destacada aparece en la portada de "Noticias".</p>
+          <button class="btn-primary sm" onclick="openNoticiaForm()">+ Nueva Noticia</button>
+        </div>
+        <div id="adminNoticiasList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- CREAR / EDITAR NOTICIA -->
+  <div class="tool-panel" id="panelNoticia">
+    <div class="panel-overlay" id="panelNoticiaOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelNoticiaClose">✕</button>
+      <h2 class="panel-title" id="panelNoticiaTitle">📰 Nueva Noticia</h2>
+      <p class="panel-sub">Se publica al instante para todos los usuarios</p>
+      <div class="reg-form">
+        <div class="reg-group">
+          <label class="reg-label">Título</label>
+          <input type="text" class="planner-input full-w" id="noticiaTitulo" placeholder="Título de la noticia" />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Categoría</label>
+          <select class="planner-select full-w" id="noticiaCategoria">
+            <option value="legislacion">Legislación</option>
+            <option value="ayudas">Ayudas</option>
+            <option value="investigacion">Investigación</option>
+            <option value="consejos">Consejos</option>
+            <option value="eventos">Eventos</option>
+          </select>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Extracto / resumen</label>
+          <textarea class="reg-textarea" id="noticiaExtracto" placeholder="Resumen breve que se muestra en la tarjeta..."></textarea>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Foto (opcional — si no subís una, se usa un ícono según la categoría)</label>
+          <div class="reply-attach-row">
+            <label class="reply-attach-btn" for="noticiaImageInput" title="Adjuntar foto">
+              📷 Añadir foto
+              <input type="file" id="noticiaImageInput" accept="image/*" style="display:none"
+                     onchange="previewNoticiaImage(event)" />
+            </label>
+          </div>
+          <div id="noticiaImagePreview" class="reply-image-preview hidden">
+            <img id="noticiaPreviewImg" src="" alt="Vista previa" />
+            <button class="reply-remove-img" onclick="removeNoticiaImage()" title="Quitar foto">✕</button>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Enlace externo (opcional)</label>
+          <input type="url" class="planner-input full-w" id="noticiaLink" placeholder="https://..." />
+        </div>
+        <div class="reg-group">
+          <label class="reg-privacy-toggle">
+            <input type="checkbox" id="noticiaDestacada" />
+            <span>⭐ Destacar en portada (reemplaza a la noticia destacada actual)</span>
+          </label>
+        </div>
+        <button class="btn-primary full" id="saveNoticiaBtn">💾 Publicar Noticia</button>
+      </div>
+    </div>
+  </div>
+
   <div class="tool-panel" id="panelPostDetail">
     <div class="panel-overlay" id="panelPostOverlay"></div>
     <div class="panel-content">
@@ -619,50 +687,18 @@
       <div class="news-featured">
         <div class="featured-news-card">
           <span class="featured-label">📌 Destacado</span>
-          <h3>Nueva Ley de Familias: Cambios que afectan a cuidadores</h3>
-          <p>La reciente aprobación incluye ampliación del permiso de cuidado hasta 12 semanas, nuevas prestaciones económicas y acceso prioritario a servicios sociales para familias con menores con discapacidad...</p>
+          <h3 id="featuredNewsTitle"></h3>
+          <p id="featuredNewsExcerpt"></p>
           <div class="fn-meta">
-            <span class="fn-date">📅 Julio 2026</span>
-            <span class="fn-cat">Legislación</span>
+            <span class="fn-date" id="featuredNewsDate"></span>
+            <span class="fn-cat" id="featuredNewsCat"></span>
           </div>
           <button class="btn-secondary sm" id="btnLeerMas">Leer más</button>
         </div>
         <div class="quick-news-list">
           <h4>Últimas noticias</h4>
-          <div class="qn-item" id="qn1">
-            <span class="qn-dot dot-green"></span>
-            <div>
-              <span class="qn-title">Nuevas plazas en centros de día para menores con TEA</span>
-              <span class="qn-time">Hace 2 horas</span>
-            </div>
-          </div>
-          <div class="qn-item" id="qn2">
-            <span class="qn-dot dot-blue"></span>
-            <div>
-              <span class="qn-title">Convocatoria de becas para adaptaciones del hogar</span>
-              <span class="qn-time">Hace 5 horas</span>
-            </div>
-          </div>
-          <div class="qn-item" id="qn3">
-            <span class="qn-dot dot-purple"></span>
-            <div>
-              <span class="qn-title">Estudio: el 70% de cuidadores experimenta burnout severo</span>
-              <span class="qn-time">Ayer</span>
-            </div>
-          </div>
-          <div class="qn-item" id="qn4">
-            <span class="qn-dot dot-orange"></span>
-            <div>
-              <span class="qn-title">Jornada de formación gratuita para familias: inscripción abierta</span>
-              <span class="qn-time">Hace 2 días</span>
-            </div>
-          </div>
-          <div class="qn-item" id="qn5">
-            <span class="qn-dot dot-pink"></span>
-            <div>
-              <span class="qn-title">App de comunicación aumentativa: nueva versión gratuita</span>
-              <span class="qn-time">Hace 3 días</span>
-            </div>
+          <div id="quickNewsList">
+            <!-- Populated by JS -->
           </div>
         </div>
       </div>

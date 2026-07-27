@@ -232,6 +232,7 @@ window.handleLogin = function(e) {
   closePanel('panelAuth');
   renderForum();
   renderMyTrayectoria();
+  renderNews(document.querySelector('.nfilter[data-filter].active')?.dataset.filter || 'all');
   return false;
 };
 
@@ -255,6 +256,7 @@ window.handleRegister = function(e) {
   closePanel('panelAuth');
   renderForum();
   renderMyTrayectoria();
+  renderNews(document.querySelector('.nfilter[data-filter].active')?.dataset.filter || 'all');
   return false;
 };
 
@@ -263,6 +265,7 @@ window.logoutUser = function() {
   showToast('Sesión cerrada', 'info');
   renderForum();
   renderMyTrayectoria();
+  renderNews(document.querySelector('.nfilter[data-filter].active')?.dataset.filter || 'all');
 };
 
 // =============================================
@@ -1088,6 +1091,7 @@ window.openAdminPanel = function() {
   renderAdminUsers();
   renderAdminPosts();
   renderAdminRiesgo();
+  renderAdminNoticias();
   openPanel('panelAdmin');
 };
 document.getElementById('panelAdminClose')?.addEventListener('click',  () => closePanel('panelAdmin'));
@@ -1098,12 +1102,15 @@ window.switchAdminTab = function(tab) {
   document.getElementById('btnTabPosts').classList.toggle('active', tab === 'posts');
   document.getElementById('btnTabPortada').classList.toggle('active', tab === 'portada');
   document.getElementById('btnTabRiesgo').classList.toggle('active', tab === 'riesgo');
+  document.getElementById('btnTabNoticias').classList.toggle('active', tab === 'noticias');
   document.getElementById('adminUsersTab').classList.toggle('hidden', tab !== 'users');
   document.getElementById('adminPostsTab').classList.toggle('hidden', tab !== 'posts');
   document.getElementById('adminPortadaTab').classList.toggle('hidden', tab !== 'portada');
   document.getElementById('adminRiesgoTab').classList.toggle('hidden', tab !== 'riesgo');
+  document.getElementById('adminNoticiasTab').classList.toggle('hidden', tab !== 'noticias');
   if (tab === 'portada') renderAdminPortada();
   if (tab === 'riesgo') renderAdminRiesgo();
+  if (tab === 'noticias') renderAdminNoticias();
 };
 
 function renderAdminUsers() {
@@ -1257,46 +1264,303 @@ function renderFeaturedFamilyWidget() {
 }
 
 // =============================================
-// NEWS
+// NEWS (localStorage, gestionable por el admin)
 // =============================================
-const newsData = [
-  { cat:'legislacion', catLabel:'Legislación', emoji:'📜', gradient:'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(37,99,235,0.2))', title:'RD 469/2026: Nuevas prestaciones para cuidadores no profesionales', excerpt:'El nuevo real decreto amplía las coberturas de la Seguridad Social para cuidadores en el hogar de personas con discapacidad severa.', date:'Julio 2026' },
-  { cat:'ayudas', catLabel:'Ayudas', emoji:'💰', gradient:'linear-gradient(135deg, rgba(16,185,129,0.3), rgba(13,148,136,0.2))', title:'Convocatoria de ayudas para adaptación de vivienda 2026', excerpt:'El IMSERSO abre la convocatoria de subvenciones para adaptar el hogar a las necesidades de niños con movilidad reducida.', date:'Julio 2026' },
-  { cat:'investigacion', catLabel:'Investigación', emoji:'🔬', gradient:'linear-gradient(135deg, rgba(37,99,235,0.3), rgba(124,58,237,0.2))', title:'Estudio: intervención temprana mejora calidad de vida en TEA', excerpt:'Nuevos resultados del estudio PIATEA muestran mejoras del 40% en habilidades comunicativas con intervención antes de los 3 años.', date:'Junio 2026' },
-  { cat:'consejos', catLabel:'Consejos', emoji:'💡', gradient:'linear-gradient(135deg, rgba(245,158,11,0.3), rgba(236,72,153,0.1))', title:'10 técnicas de descanso para cuidadores en tiempo reducido', excerpt:'Psicólogos especializados comparten estrategias validadas para recuperar energía incluso en rutinas muy exigentes.', date:'Junio 2026' },
-  { cat:'eventos', catLabel:'Eventos', emoji:'🎪', gradient:'linear-gradient(135deg, rgba(236,72,153,0.3), rgba(124,58,237,0.2))', title:'Jornada Nacional de Familias con Hijos con Discapacidad', excerpt:'Madrid, 15 de septiembre. Talleres, ponencias y espacio de networking para cuidadores. Inscripción gratuita.', date:'Sep 2026' },
-  { cat:'ayudas', catLabel:'Ayudas', emoji:'🏫', gradient:'linear-gradient(135deg, rgba(16,185,129,0.3), rgba(245,158,11,0.1))', title:'Nuevas plazas en centros de atención temprana para 2026-27', excerpt:'Las comunidades autónomas amplían la red de centros con 2.800 nuevas plazas para el próximo curso.', date:'Julio 2026' }
+const NEWS_CATEGORIES = {
+  legislacion:   { label: 'Legislación',   emoji: '📜', gradient: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(37,99,235,0.2))' },
+  ayudas:        { label: 'Ayudas',        emoji: '💰', gradient: 'linear-gradient(135deg, rgba(16,185,129,0.3), rgba(13,148,136,0.2))' },
+  investigacion: { label: 'Investigación', emoji: '🔬', gradient: 'linear-gradient(135deg, rgba(37,99,235,0.3), rgba(124,58,237,0.2))' },
+  consejos:      { label: 'Consejos',      emoji: '💡', gradient: 'linear-gradient(135deg, rgba(245,158,11,0.3), rgba(236,72,153,0.1))' },
+  eventos:       { label: 'Eventos',       emoji: '🎪', gradient: 'linear-gradient(135deg, rgba(236,72,153,0.3), rgba(124,58,237,0.2))' }
+};
+
+const SEED_NEWS = [
+  { id: 'news-1', category: 'legislacion',   featured: true,  timestamp: daysAgoAt(0, 8, 0),
+    title: 'Nueva Ley de Familias: Cambios que afectan a cuidadores',
+    excerpt: 'La reciente aprobación incluye ampliación del permiso de cuidado hasta 12 semanas, nuevas prestaciones económicas y acceso prioritario a servicios sociales para familias con menores con discapacidad...',
+    image: null, link: null },
+  { id: 'news-2', category: 'legislacion',   featured: false, timestamp: daysAgoAt(0, 4, 0),
+    title: 'RD 469/2026: Nuevas prestaciones para cuidadores no profesionales',
+    excerpt: 'El nuevo real decreto amplía las coberturas de la Seguridad Social para cuidadores en el hogar de personas con discapacidad severa.',
+    image: null, link: null },
+  { id: 'news-3', category: 'ayudas',        featured: false, timestamp: daysAgoAt(0, 9, 0),
+    title: 'Convocatoria de ayudas para adaptación de vivienda 2026',
+    excerpt: 'El IMSERSO abre la convocatoria de subvenciones para adaptar el hogar a las necesidades de niños con movilidad reducida.',
+    image: null, link: null },
+  { id: 'news-4', category: 'investigacion', featured: false, timestamp: daysAgoAt(1, 10, 0),
+    title: 'Estudio: intervención temprana mejora calidad de vida en TEA',
+    excerpt: 'Nuevos resultados del estudio PIATEA muestran mejoras del 40% en habilidades comunicativas con intervención antes de los 3 años.',
+    image: null, link: null },
+  { id: 'news-5', category: 'consejos',      featured: false, timestamp: daysAgoAt(2, 9, 0),
+    title: '10 técnicas de descanso para cuidadores en tiempo reducido',
+    excerpt: 'Psicólogos especializados comparten estrategias validadas para recuperar energía incluso en rutinas muy exigentes.',
+    image: null, link: null },
+  { id: 'news-6', category: 'eventos',       featured: false, timestamp: daysAgoAt(3, 9, 0),
+    title: 'Jornada Nacional de Familias con Hijos con Discapacidad',
+    excerpt: 'Madrid, 15 de septiembre. Talleres, ponencias y espacio de networking para cuidadores. Inscripción gratuita.',
+    image: null, link: null },
+  { id: 'news-7', category: 'ayudas',        featured: false, timestamp: daysAgoAt(4, 9, 0),
+    title: 'Nuevas plazas en centros de atención temprana para 2026-27',
+    excerpt: 'Las comunidades autónomas amplían la red de centros con 2.800 nuevas plazas para el próximo curso.',
+    image: null, link: null }
 ];
+
+let _newsCache = null;
+function getNews() {
+  if (_newsCache) return _newsCache;
+  const data = localStorage.getItem('cuidapp_news');
+  _newsCache = data ? JSON.parse(data) : SEED_NEWS;
+  if (!data) localStorage.setItem('cuidapp_news', JSON.stringify(_newsCache));
+  return _newsCache;
+}
+function saveNews(news) { _newsCache = news; localStorage.setItem('cuidapp_news', JSON.stringify(news)); }
+
+function formatRelativeTime(ts) {
+  const diffH = Math.floor((Date.now() - ts) / 3600000);
+  if (diffH < 1) return 'Hace unos minutos';
+  if (diffH < 24) return `Hace ${diffH} hora${diffH === 1 ? '' : 's'}`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD === 1) return 'Ayer';
+  if (diffD < 7) return `Hace ${diffD} días`;
+  return new Date(ts).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 function renderNews(filter = 'all') {
   const grid = document.getElementById('newsGrid');
   if (!grid) return;
-  const filtered = filter === 'all' ? newsData : newsData.filter(n => n.cat === filter);
-  grid.innerHTML = filtered.map(n => `
+  const cu = getCurrentUser();
+  const isAdmin = !!(cu && cu.role === 'admin');
+  const news = [...getNews()].sort((a, b) => b.timestamp - a.timestamp);
+  const filtered = filter === 'all' ? news : news.filter(n => n.category === filter);
+
+  grid.innerHTML = filtered.map(n => {
+    const meta = NEWS_CATEGORIES[n.category] || NEWS_CATEGORIES.consejos;
+    const imgStyle = n.image
+      ? `background-image:url('${escapeHtml(n.image)}');background-size:cover;background-position:center;`
+      : `background:${meta.gradient};`;
+    return `
     <div class="news-card">
-      <div class="news-img" style="background:${n.gradient}"><span style="font-size:3.5rem">${n.emoji}</span></div>
+      <div class="news-img" style="${imgStyle}">${n.image ? '' : `<span style="font-size:3.5rem">${meta.emoji}</span>`}</div>
       <div class="news-body">
-        <span class="news-cat cat-${n.cat}">${n.catLabel}</span>
-        <h3 class="news-title">${n.title}</h3>
-        <p class="news-excerpt">${n.excerpt}</p>
+        <span class="news-cat cat-${n.category}">${meta.label}${n.featured ? ' · ⭐ Destacada' : ''}</span>
+        <h3 class="news-title">${escapeHtml(n.title)}</h3>
+        <p class="news-excerpt">${escapeHtml(n.excerpt)}</p>
         <div class="news-meta">
-          <span class="news-date">📅 ${n.date}</span>
-          <button class="news-read" onclick="showToast('Cargando artículo...','info')">Leer más →</button>
+          <span class="news-date">📅 ${formatRelativeTime(n.timestamp)}</span>
+          ${n.link
+            ? `<a class="news-read" href="${escapeHtml(n.link)}" target="_blank" rel="noopener noreferrer">Leer más →</a>`
+            : `<button class="news-read" onclick="showToast('Esta noticia todavía no tiene un enlace externo','info')">Leer más →</button>`}
         </div>
+        ${isAdmin ? `
+          <div class="news-admin-actions">
+            <button class="btn-micro" onclick="openNoticiaForm('${n.id}')">✏️ Editar</button>
+            <button class="btn-micro" style="color:var(--red)" onclick="deleteNoticia('${n.id}')">🗑️ Eliminar</button>
+          </div>` : ''}
+      </div>
+    </div>
+  `;
+  }).join('');
+  if (filtered.length === 0) grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;padding:40px">No hay noticias en esta categoría.</p>';
+}
+
+function renderFeaturedNews() {
+  const news = getNews();
+  if (news.length === 0) return;
+  const featured = news.find(n => n.featured) || [...news].sort((a, b) => b.timestamp - a.timestamp)[0];
+  const meta = NEWS_CATEGORIES[featured.category] || NEWS_CATEGORIES.consejos;
+
+  const titleEl = document.getElementById('featuredNewsTitle');
+  const excerptEl = document.getElementById('featuredNewsExcerpt');
+  const dateEl = document.getElementById('featuredNewsDate');
+  const catEl = document.getElementById('featuredNewsCat');
+  const btnEl = document.getElementById('btnLeerMas');
+  if (titleEl) titleEl.textContent = featured.title;
+  if (excerptEl) excerptEl.textContent = featured.excerpt;
+  if (dateEl) dateEl.textContent = '📅 ' + formatRelativeTime(featured.timestamp);
+  if (catEl) catEl.textContent = meta.label;
+  if (btnEl) {
+    if (featured.link) {
+      btnEl.onclick = () => window.open(featured.link, '_blank', 'noopener,noreferrer');
+    } else {
+      btnEl.onclick = () => showToast('Esta noticia todavía no tiene un enlace externo', 'info');
+    }
+  }
+}
+
+function renderQuickNewsList() {
+  const list = document.getElementById('quickNewsList');
+  if (!list) return;
+  const DOTS = ['dot-green', 'dot-blue', 'dot-purple', 'dot-orange', 'dot-pink'];
+  const items = [...getNews()].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+  list.innerHTML = items.map((n, i) => `
+    <div class="qn-item">
+      <span class="qn-dot ${DOTS[i % DOTS.length]}"></span>
+      <div>
+        <span class="qn-title">${escapeHtml(n.title)}</span>
+        <span class="qn-time">${formatRelativeTime(n.timestamp)}</span>
       </div>
     </div>
   `).join('');
-  if (filtered.length === 0) grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;padding:40px">No hay noticias en esta categoría.</p>';
 }
-renderNews();
 
-document.querySelectorAll('.nfilter').forEach(btn => {
+document.querySelectorAll('.nfilter[data-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.nfilter').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nfilter[data-filter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderNews(btn.dataset.filter);
   });
 });
+
+// =============================================
+// ADMIN: CREAR / EDITAR / DESTACAR / ELIMINAR NOTICIAS
+// =============================================
+let editingNoticiaId = null;
+
+window.openNoticiaForm = function(newsId) {
+  const cu = getCurrentUser();
+  if (!cu || cu.role !== 'admin') return;
+  const item = newsId ? getNews().find(n => n.id === newsId) : null;
+  editingNoticiaId = item ? item.id : null;
+
+  document.getElementById('panelNoticiaTitle').textContent = item ? '✏️ Editar Noticia' : '📰 Nueva Noticia';
+  document.getElementById('noticiaTitulo').value = item ? item.title : '';
+  document.getElementById('noticiaCategoria').value = item ? item.category : 'legislacion';
+  document.getElementById('noticiaExtracto').value = item ? item.excerpt : '';
+  document.getElementById('noticiaLink').value = item && item.link ? item.link : '';
+  document.getElementById('noticiaDestacada').checked = !!(item && item.featured);
+
+  const preview = document.getElementById('noticiaImagePreview');
+  const img = document.getElementById('noticiaPreviewImg');
+  document.getElementById('noticiaImageInput').value = '';
+  if (item && item.image) {
+    img.src = item.image;
+    preview.classList.remove('hidden');
+  } else {
+    img.src = '';
+    preview.classList.add('hidden');
+  }
+
+  openPanel('panelNoticia');
+};
+document.getElementById('panelNoticiaClose')?.addEventListener('click',   () => closePanel('panelNoticia'));
+document.getElementById('panelNoticiaOverlay')?.addEventListener('click', () => closePanel('panelNoticia'));
+
+window.previewNoticiaImage = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    showToast('La imagen no puede superar 3 MB', 'error'); e.target.value = ''; return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('noticiaPreviewImg').src = ev.target.result;
+    document.getElementById('noticiaImagePreview').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+};
+
+window.removeNoticiaImage = function() {
+  document.getElementById('noticiaImageInput').value = '';
+  document.getElementById('noticiaImagePreview').classList.add('hidden');
+  document.getElementById('noticiaPreviewImg').src = '';
+};
+
+document.getElementById('saveNoticiaBtn')?.addEventListener('click', () => {
+  const cu = getCurrentUser();
+  if (!cu || cu.role !== 'admin') return;
+  const title    = document.getElementById('noticiaTitulo')?.value.trim();
+  const category = document.getElementById('noticiaCategoria')?.value;
+  const excerpt  = document.getElementById('noticiaExtracto')?.value.trim();
+  const link     = document.getElementById('noticiaLink')?.value.trim();
+  const featured = document.getElementById('noticiaDestacada')?.checked || false;
+  const image     = document.getElementById('noticiaPreviewImg')?.src || '';
+  const hasImage  = !document.getElementById('noticiaImagePreview').classList.contains('hidden') && image;
+
+  if (!title || !excerpt) { showToast('Completá al menos el título y el extracto', 'error'); return; }
+  if (link && !link.match(/^https?:\/\//i)) { showToast('El enlace debe empezar por https:// o http://', 'error'); return; }
+
+  const news = getNews();
+
+  if (featured) news.forEach(n => { n.featured = false; });
+
+  if (editingNoticiaId) {
+    const idx = news.findIndex(n => n.id === editingNoticiaId);
+    if (idx !== -1) {
+      news[idx] = {
+        ...news[idx], title, category, excerpt, featured,
+        link: link || null, image: hasImage ? image : null
+      };
+    }
+  } else {
+    news.unshift({
+      id: 'news-' + Date.now(), title, category, excerpt, featured,
+      link: link || null, image: hasImage ? image : null, timestamp: Date.now()
+    });
+  }
+
+  saveNews(news);
+  editingNoticiaId = null;
+  closePanel('panelNoticia');
+  showToast('📰 Noticia publicada', 'success');
+  renderNews(document.querySelector('.nfilter.active')?.dataset.filter || 'all');
+  renderFeaturedNews();
+  renderQuickNewsList();
+  renderAdminNoticias();
+});
+
+window.deleteNoticia = function(newsId) {
+  if (!confirm('¿Eliminar esta noticia?')) return;
+  saveNews(getNews().filter(n => n.id !== newsId));
+  showToast('Noticia eliminada', 'info');
+  renderNews(document.querySelector('.nfilter.active')?.dataset.filter || 'all');
+  renderFeaturedNews();
+  renderQuickNewsList();
+  renderAdminNoticias();
+};
+
+window.toggleFeaturedNoticia = function(newsId) {
+  const news = getNews();
+  const target = news.find(n => n.id === newsId);
+  if (!target) return;
+  const makeFeatured = !target.featured;
+  news.forEach(n => { n.featured = false; });
+  target.featured = makeFeatured;
+  saveNews(news);
+  showToast(makeFeatured ? '⭐ Noticia destacada en portada' : 'Noticia ya no está destacada', 'success');
+  renderNews(document.querySelector('.nfilter.active')?.dataset.filter || 'all');
+  renderFeaturedNews();
+  renderAdminNoticias();
+};
+
+function renderAdminNoticias() {
+  const list = document.getElementById('adminNoticiasList');
+  if (!list) return;
+  const news = [...getNews()].sort((a, b) => b.timestamp - a.timestamp);
+  if (news.length === 0) {
+    list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:20px">Todavía no hay noticias.</p>';
+    return;
+  }
+  list.innerHTML = news.map(n => {
+    const meta = NEWS_CATEGORIES[n.category] || NEWS_CATEGORIES.consejos;
+    return `
+    <div class="admin-user-row" style="${n.featured ? 'border:2px solid var(--gold);background:var(--gold-pale);' : ''}">
+      <div class="admin-user-info">
+        <strong>${escapeHtml(n.title)} ${n.featured ? '<span class="ffw-pinned-tag">⭐ DESTACADA</span>' : ''}</strong>
+        <span>${meta.label} · ${formatRelativeTime(n.timestamp)}${n.image ? ' · 📷 con foto' : ''}${n.link ? ' · 🔗 con enlace' : ''}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn-micro" style="${n.featured ? 'color:var(--text-muted)' : 'color:var(--gold);border-color:var(--gold)'}" onclick="toggleFeaturedNoticia('${n.id}')">${n.featured ? '☆ Quitar' : '⭐ Destacar'}</button>
+        <button class="btn-micro" onclick="openNoticiaForm('${n.id}')">✏️ Editar</button>
+        <button class="btn-micro" style="color:var(--red)" onclick="deleteNoticia('${n.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+renderNews();
+renderFeaturedNews();
+renderQuickNewsList();
 
 // =============================================
 // TEST DE BIENESTAR
