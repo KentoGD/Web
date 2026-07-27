@@ -7,11 +7,10 @@
 // =============================================
 // HTML ESCAPING (evita XSS en contenido de usuario)
 // =============================================
+const HTML_ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 function escapeHtml(value) {
   if (value === null || value === undefined) return '';
-  return String(value).replace(/[&<>"']/g, (ch) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[ch]);
+  return String(value).replace(/[&<>"']/g, (ch) => HTML_ESCAPE_MAP[ch]);
 }
 
 // =============================================
@@ -94,10 +93,16 @@ document.querySelectorAll('.nav-link').forEach(link => {
 // Hamburger
 hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
 
-// Navbar scrolled class on window scroll
+// Navbar scrolled class on window scroll (rAF-throttled to avoid redundant work per event)
+let scrollTicking = false;
 window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 20);
-});
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(() => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+    scrollTicking = false;
+  });
+}, { passive: true });
 
 // Keyboard Escape closes mobile nav
 document.addEventListener('keydown', (e) => {
@@ -203,18 +208,27 @@ const DEFAULT_USERS = [
   { id: 'u-3', email: 'elena@ejemplo.com', pass: '123456', name: 'Dra. Elena', role: 'profesional', banned: false }
 ];
 
+let _usersCache = null;
 function getUsers() {
+  if (_usersCache) return _usersCache;
   const data = localStorage.getItem('cuidapp_users');
-  if (!data) { localStorage.setItem('cuidapp_users', JSON.stringify(DEFAULT_USERS)); return DEFAULT_USERS; }
-  return JSON.parse(data);
+  _usersCache = data ? JSON.parse(data) : DEFAULT_USERS;
+  if (!data) localStorage.setItem('cuidapp_users', JSON.stringify(_usersCache));
+  return _usersCache;
 }
-function saveUsers(users) { localStorage.setItem('cuidapp_users', JSON.stringify(users)); }
+function saveUsers(users) { _usersCache = users; localStorage.setItem('cuidapp_users', JSON.stringify(users)); }
 
+let _currentUserCache, _currentUserCached = false;
 function getCurrentUser() {
+  if (_currentUserCached) return _currentUserCache;
   const data = localStorage.getItem('cuidapp_current_user');
-  return data ? JSON.parse(data) : null;
+  _currentUserCache = data ? JSON.parse(data) : null;
+  _currentUserCached = true;
+  return _currentUserCache;
 }
 function setCurrentUser(user) {
+  _currentUserCache = user || null;
+  _currentUserCached = true;
   if (user) localStorage.setItem('cuidapp_current_user', JSON.stringify(user));
   else localStorage.removeItem('cuidapp_current_user');
   updateUserNavUI();
@@ -331,12 +345,15 @@ const SAMPLE_POSTS = [
   }
 ];
 
+let _postsCache = null;
 function getStoredPosts() {
+  if (_postsCache) return _postsCache;
   const data = localStorage.getItem('cuidapp_forum_posts');
-  if (!data) { localStorage.setItem('cuidapp_forum_posts', JSON.stringify(SAMPLE_POSTS)); return SAMPLE_POSTS; }
-  return JSON.parse(data);
+  _postsCache = data ? JSON.parse(data) : SAMPLE_POSTS;
+  if (!data) localStorage.setItem('cuidapp_forum_posts', JSON.stringify(_postsCache));
+  return _postsCache;
 }
-function savePosts(posts) { localStorage.setItem('cuidapp_forum_posts', JSON.stringify(posts)); }
+function savePosts(posts) { _postsCache = posts; localStorage.setItem('cuidapp_forum_posts', JSON.stringify(posts)); }
 
 function renderForum() {
   const posts    = getStoredPosts();
