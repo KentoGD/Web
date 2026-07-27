@@ -321,6 +321,7 @@ section { padding: 90px 0; }
    MI SITUACIÓN (panel personal del usuario)
    ============================================= */
 .quick-indicators { background: var(--bg-section); }
+.quick-indicators .section-header { margin-bottom: 24px; }
 /* MI TRAYECTORIA PERSONAL */
 .trayectoria-card {
   background: white; border: 2px solid var(--border); border-radius: var(--radius);
