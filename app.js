@@ -388,7 +388,7 @@ function renderMyTrayectoria() {
   };
   const [riskText, riskClass] = RISK_LABELS[risk.level];
 
-  const chartRecords = [...allRecords].reverse().slice(-14); // orden cronológico para el gráfico
+  const chartRecords = [...allRecords].reverse(); // todo el historial, en orden cronológico
   const energyColor = (e) => (e >= 7 ? 'var(--green)' : e >= 4 ? 'var(--gold)' : 'var(--red)');
 
   const last = allRecords[0];
@@ -419,7 +419,7 @@ function renderMyTrayectoria() {
     </div>
 
     <div class="tray-swimlane-wrap">
-      <div class="tray-swimlane" style="grid-template-columns: 96px repeat(${chartRecords.length}, minmax(38px, 1fr));">
+      <div class="tray-swimlane" style="grid-template-columns: 96px repeat(${chartRecords.length}, 56px);">
         <span class="tray-lane-label">👶 Niño/a</span>
         ${chartRecords.map(r => `<span class="tray-lane-cell" title="Niño/a: ${escapeHtml(r.childMood)}">${MOOD_EMOJI[r.childMoodVal] ?? '🙂'}</span>`).join('')}
 
