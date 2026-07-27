@@ -159,7 +159,7 @@ body {
    HERO
    ============================================= */
 .hero {
-  min-height: 100vh; display: flex; flex-direction: column;
+  min-height: 100vh; flex-direction: column;
   justify-content: center; align-items: center;
   padding: 140px 24px 60px; position: relative; overflow: hidden;
   background: linear-gradient(160deg, #E8F4FD 0%, #FFF8E7 50%, #E6F7F5 100%);
