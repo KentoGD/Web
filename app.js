@@ -1980,11 +1980,18 @@ const fadeObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.tool-card,.news-card,.res-card,.info-stat-card,.alert-item,.tl-item').forEach((el,i) => {
-  el.style.opacity   = '0';
-  el.style.transform = 'translateY(24px)';
-  el.style.transition = `opacity 0.5s ease ${i*0.05}s, transform 0.5s ease ${i*0.05}s`;
-  fadeObserver.observe(el);
+// El índice de la animación escalonada se calcula por página, no en todo el
+// documento: si no, las tarjetas de una página que aparece más abajo en el
+// HTML heredan el conteo de las páginas anteriores y tardan mucho más de la
+// cuenta en aparecer la primera vez que se entra (hasta 1s+ de "página vacía").
+document.querySelectorAll('.page-section').forEach(section => {
+  section.querySelectorAll('.tool-card,.news-card,.res-card,.info-stat-card,.alert-item,.tl-item').forEach((el, i) => {
+    const delay = Math.min(i, 8) * 0.05;
+    el.style.opacity   = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = `opacity 0.5s ease ${delay}s, transform 0.5s ease ${delay}s`;
+    fadeObserver.observe(el);
+  });
 });
 
 // =============================================
