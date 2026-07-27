@@ -126,8 +126,8 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 }
 .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 800; letter-spacing: 1.5px; white-space: nowrap; color: var(--blue-dark); }
 .brand-icon { font-size: 1.4rem; animation: pulse-icon 2.5s ease-in-out infinite; }
-.brand-logo { height: 44px; width: auto; display: block; flex-shrink: 0; }
-.footer-logo { height: 62px; margin-bottom: 6px; }
+.brand-logo { height: 48px; width: auto; display: block; flex-shrink: 0; }
+.footer-logo { height: 85px; margin-bottom: 6px; }
 @keyframes pulse-icon { 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
 
 .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; flex: 1; justify-content: center; }
@@ -178,7 +178,7 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
   max-width: 1200px; width: 100%; margin: 0 auto 34px;
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px;
 }
-.hero-brand-logo { height: 92px; width: auto; margin-bottom: 12px; }
+.hero-brand-logo { height: 170px; width: auto; margin-bottom: 8px; max-width: 90%; filter: drop-shadow(0 4px 16px rgba(27, 73, 101, 0.07)); }
 .hero-brand-name {
   font-family: 'Baloo 2', 'Quicksand', sans-serif;
   font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 800;
@@ -193,8 +193,8 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 .hero-brand-ca { font-weight: 600; color: var(--text-muted); font-size: clamp(0.66rem, 1.3vw, 0.85rem); }
 
 @media (max-width: 768px) {
-  .hero-brand { margin-bottom: 32px; }
-  .hero-brand-logo { height: 84px; }
+  .hero-brand { margin-bottom: 24px; }
+  .hero-brand-logo { height: 110px; }
 }
 .shape {
   position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25;
