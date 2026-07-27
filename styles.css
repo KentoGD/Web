@@ -941,7 +941,8 @@ section { padding: 90px 0; }
   .alerts-layout { grid-template-columns: 1fr; }
   .infographic-grid { grid-template-columns: repeat(2,1fr); }
   .sit-label { width: 130px; font-size: 0.75rem; }
-  .footer-container { grid-template-columns: 1fr; }
+  .footer-container { grid-template-columns: 1fr 1fr; gap: 24px 32px; }
+  .footer-brand { grid-column: 1 / -1; }
   .donut-card { flex-direction: column; }
   .planner-grid { grid-template-columns: repeat(4,1fr); }
 }
