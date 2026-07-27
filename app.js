@@ -614,7 +614,7 @@ function renderForum() {
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <span class="forum-tag">${escapeHtml(p.catLabel)}</span>
-          ${cu && cu.role === 'admin' ? `<button class="btn-micro" style="color:var(--red)" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
+          ${cu && cu.role === 'admin' ? `<button class="btn-icon-plain" onclick="deletePost('${p.id}')" title="Eliminar">🗑️</button>` : ''}
         </div>
       </div>
       <div class="forum-body">
@@ -627,7 +627,7 @@ function renderForum() {
         </div>
       </div>
       <div class="forum-footer">
-        <button class="btn-like ${p.userLiked ? 'liked' : ''}" onclick="toggleLike('${p.id}')">💙 <span>${p.likes} Apoyos</span></button>
+        <button class="btn-like ${p.userLiked ? 'liked' : ''}" onclick="toggleLike('${p.id}')">❤️ <span>${p.likes} Apoyos</span></button>
         <div class="forum-actions">
           <span class="forum-comments-count">💬 ${p.comments.length} respuestas</span>
           <button class="btn-micro" onclick="openPostDetail('${p.id}')">Ver y Responder →</button>
@@ -1156,7 +1156,7 @@ function renderAdminPosts() {
     <div class="admin-user-row">
       <div class="admin-user-info">
         <strong>${escapeHtml(p.title)}</strong>
-        <span>Por: ${escapeHtml(p.author)} · ${escapeHtml(p.date)} · 💙 ${p.likes} apoyos</span>
+        <span>Por: ${escapeHtml(p.author)} · ${escapeHtml(p.date)} · ❤️ ${p.likes} apoyos</span>
       </div>
       <button class="btn-micro" style="color:var(--red)" onclick="deletePost('${p.id}')">🗑️ Eliminar</button>
     </div>
@@ -1203,7 +1203,7 @@ function renderAdminPortada() {
       <div class="admin-user-row" style="${isPinned ? 'border:2px solid var(--gold);background:var(--gold-pale);' : ''}">
         <div class="admin-user-info">
           <strong>${escapeHtml(p.title)} ${isPinned ? '<span class="ffw-pinned-tag">📌 EN PORTADA</span>' : ''}</strong>
-          <span>Por: ${escapeHtml(p.author)} · 💙 ${p.likes} apoyos · ${p.comments.length} respuestas</span>
+          <span>Por: ${escapeHtml(p.author)} · ❤️ ${p.likes} apoyos · ${p.comments.length} respuestas</span>
         </div>
         <div style="display:flex;gap:6px;">
           ${isPinned
@@ -1252,7 +1252,7 @@ function renderFeaturedFamilyWidget() {
       <span class="ffw-stat">${escapeHtml(featured.catLabel)}</span>
       <span class="ffw-stat">💬 ${featured.comments.length} respuestas</span>
     </div>
-    <div class="ffw-likes">💙 ${featured.likes} familias dan su apoyo</div>
+    <div class="ffw-likes">❤️ ${featured.likes} familias dan su apoyo</div>
   `;
 
   if (ctaBtn) {
