@@ -337,17 +337,36 @@ section { padding: 90px 0; }
 .risk-badge.risk-ok       { background: var(--green-pale); color: var(--green); }
 .risk-badge.risk-atencion { background: var(--gold-pale); color: var(--gold); }
 .risk-badge.risk-grave    { background: var(--red-pale); color: var(--red); }
+.tray-stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin-bottom: 24px; }
+.tray-stat-tile { background: var(--bg-section); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.tray-stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+.tray-stat-value { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); }
+.tray-stat-value.tray-stat-small { font-size: 0.82rem; font-weight: 700; }
 .trayectoria-bars { display: flex; align-items: flex-end; gap: 10px; height: 120px; padding: 0 4px; }
 .tray-bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; flex: 1; height: 100%; gap: 6px; }
-.tray-bar { width: 100%; max-width: 28px; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--blue), var(--blue-dark)); min-height: 4px; transition: var(--transition); }
+.tray-bar { width: 100%; max-width: 28px; border-radius: 6px 6px 0 0; background: var(--blue); min-height: 4px; transition: var(--transition); }
 .tray-bar-label { font-size: 0.68rem; color: var(--text-muted); }
-.trayectoria-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 12px; }
+.tray-legend { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; }
+.tray-legend-item { display: flex; align-items: center; gap: 5px; }
+.tray-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.tray-legend-sep { opacity: 0.5; }
 .risk-alert-banner {
   margin-top: 16px; padding: 16px; border-radius: 12px;
   background: var(--red-pale); border: 2px solid rgba(230,57,70,0.3);
   font-size: 0.85rem; color: var(--text-primary);
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
+.tray-history { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+.tray-history-title { font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 14px; }
+.tray-history-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
+.tray-history-item { background: var(--bg-section); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+.tray-history-date { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; text-transform: capitalize; }
+.tray-history-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.tray-history-pill { font-size: 0.72rem; padding: 3px 10px; border-radius: 99px; background: white; border: 1px solid var(--border); color: var(--text-secondary); }
+.tray-pill-private { color: var(--text-muted); }
+.tray-pill-public  { color: var(--blue); border-color: rgba(0,114,187,0.3); }
+.tray-history-activities { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+.tray-history-notes { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-top: 6px; }
 
 .indicator-card {
   background: white; border: 2px solid var(--border);

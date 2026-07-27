@@ -388,12 +388,11 @@ function renderMyTrayectoria() {
     return;
   }
 
-  const records = getSituacionLog()
+  const allRecords = getSituacionLog()
     .filter(r => r.userId === cu.id)
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-7);
+    .sort((a, b) => b.timestamp - a.timestamp);
 
-  if (records.length === 0) {
+  if (allRecords.length === 0) {
     container.innerHTML = `
       <div class="trayectoria-empty">
         <span>📊 Todavía no tenés registros. Usá "Registrar Situación" para empezar tu seguimiento diario.</span>
@@ -410,25 +409,78 @@ function renderMyTrayectoria() {
   };
   const [riskText, riskClass] = RISK_LABELS[risk.level];
 
+  // Colorea la barra según el ánimo del cuidador de ese día (no solo la
+  // altura por energía), para leer de un vistazo ánimo + agotamiento juntos.
+  const MOOD_BAR_COLOR = { 0: 'var(--green)', 1: 'var(--green)', 2: 'var(--gold)', 3: 'var(--red)', 4: 'var(--red)' };
+  const chartRecords = [...allRecords].reverse().slice(-14); // orden cronológico para el gráfico
+
+  const last = allRecords[0];
+  const avgEnergy = (allRecords.slice(0, 7).reduce((sum, r) => sum + r.energy, 0) / Math.min(7, allRecords.length)).toFixed(1);
+  const activityCounts = {};
+  allRecords.slice(0, 7).forEach(r => (r.actividades || []).forEach(a => { activityCounts[a] = (activityCounts[a] || 0) + 1; }));
+  const topActivities = Object.entries(activityCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
+
   container.innerHTML = `
     <div class="trayectoria-header">
-      <h3>📊 Mi Trayectoria</h3>
+      <h3>📊 Mi Situación</h3>
       <span class="risk-badge ${riskClass}">${riskText}</span>
     </div>
+
+    <div class="tray-stats-row">
+      <div class="tray-stat-tile">
+        <span class="tray-stat-label">Último ánimo (cuidador)</span>
+        <span class="tray-stat-value">${escapeHtml(last.caregiverMood)}</span>
+      </div>
+      <div class="tray-stat-tile">
+        <span class="tray-stat-label">Energía media (últimos ${Math.min(7, allRecords.length)})</span>
+        <span class="tray-stat-value">${avgEnergy}/10</span>
+      </div>
+      <div class="tray-stat-tile">
+        <span class="tray-stat-label">Actividades frecuentes</span>
+        <span class="tray-stat-value tray-stat-small">${topActivities.length ? escapeHtml(topActivities.join(', ')) : 'Sin registrar'}</span>
+      </div>
+    </div>
+
     <div class="trayectoria-bars">
-      ${records.map(r => `
+      ${chartRecords.map(r => `
         <div class="tray-bar-col" title="${escapeHtml(r.childMood)} · ${escapeHtml(r.caregiverMood)} · Energía ${r.energy}/10">
-          <div class="tray-bar" style="height:${r.energy * 10}%"></div>
+          <div class="tray-bar" style="height:${r.energy * 10}%;background:${MOOD_BAR_COLOR[MOOD_SEVERITY[r.caregiverMoodVal] ?? 2]}"></div>
           <span class="tray-bar-label">${new Date(r.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>
         </div>
       `).join('')}
     </div>
-    <p class="trayectoria-hint">Energía del cuidador en tus últimos ${records.length} registros.</p>
+    <div class="tray-legend">
+      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--green)"></span>Bien</span>
+      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--gold)"></span>Regular</span>
+      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--red)"></span>Difícil</span>
+      <span class="tray-legend-sep">·</span>
+      <span>altura = energía del día</span>
+    </div>
+
     ${risk.level === 'grave' ? `
       <div class="risk-alert-banner">
         <strong>💜 No estás solo/a.</strong> Detectamos varios días difíciles seguidos y tu caso quedó marcado como prioritario para nuestro equipo. Podés escribirnos ahora mismo.
         <button class="btn-primary sm" onclick="openPanel('panelMensajes')">Contactar con apoyo →</button>
       </div>` : ''}
+
+    <div class="tray-history">
+      <h4 class="tray-history-title">Todos mis registros (${allRecords.length})</h4>
+      <div class="tray-history-list">
+        ${allRecords.map(r => `
+          <div class="tray-history-item">
+            <div class="tray-history-date">${new Date(r.timestamp).toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} · ${new Date(r.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="tray-history-pills">
+              <span class="tray-history-pill">👶 ${escapeHtml(r.childMood)}</span>
+              <span class="tray-history-pill">🧠 ${escapeHtml(r.caregiverMood)}</span>
+              <span class="tray-history-pill">⚡ ${r.energy}/10</span>
+              ${r.publicadoEnForo ? '<span class="tray-history-pill tray-pill-public">🌍 Publicado en el foro</span>' : '<span class="tray-history-pill tray-pill-private">🔒 Privado</span>'}
+            </div>
+            ${(r.actividades && r.actividades.length) ? `<div class="tray-history-activities">✅ ${r.actividades.map(a => escapeHtml(a)).join(' · ')}</div>` : ''}
+            ${r.notas ? `<p class="tray-history-notes">${escapeHtml(r.notas)}</p>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
   `;
 }
 
@@ -762,6 +814,18 @@ function openRegistro(prefillPublicar) {
   const now = new Date();
   const regFecha = document.getElementById('regFecha');
   if (regFecha) regFecha.textContent = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Cada registro empieza en limpio: si no reseteamos, el formulario
+  // arrastraría las notas/ánimo/actividades del registro anterior.
+  const notasEl = document.getElementById('regNotas');
+  if (notasEl) notasEl.value = '';
+  document.querySelectorAll('#childMood .emoji-opt, #caregiverMood .emoji-opt').forEach(b => b.classList.remove('active'));
+  const slider = document.getElementById('energySlider');
+  const energyValEl = document.getElementById('energyVal');
+  if (slider) slider.value = 5;
+  if (energyValEl) energyValEl.textContent = '5/10';
+  document.querySelectorAll('#activityChecks input[type="checkbox"]').forEach(cb => cb.checked = false);
+
   // Por defecto el registro es privado; solo viene premarcado para publicar
   // cuando el usuario llegó desde el botón "Publicar mi Situación" del foro.
   const publicarCheck = document.getElementById('regPublicarForo');
@@ -786,6 +850,7 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const childMood        = childOpt     ? childOpt.title     : '🙂 Bien';
   const caregiverMood    = caregiverOpt ? caregiverOpt.title : '😐 Regular';
   const publicarForo     = document.getElementById('regPublicarForo')?.checked || false;
+  const actividades      = [...document.querySelectorAll('#activityChecks input:checked')].map(cb => cb.value);
 
   // Registro estructurado por usuario: siempre privado, alimenta "Mi
   // Trayectoria" y la detección de riesgo. Publicarlo en el foro es una
@@ -794,7 +859,8 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   log.push({
     id: 'reg-' + Date.now(), userId: cu.id, userName: cu.name,
     timestamp: Date.now(), childMoodVal, caregiverMoodVal,
-    childMood, caregiverMood, energy: energyVal, notas: notas || '', publicadoEnForo: !!(notas && publicarForo)
+    childMood, caregiverMood, energy: energyVal, notas: notas || '',
+    actividades, publicadoEnForo: !!(notas && publicarForo)
   });
   saveSituacionLog(log);
 
