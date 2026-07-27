@@ -115,28 +115,6 @@ const counterObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.hstat-num').forEach(el => counterObserver.observe(el));
 
 // =============================================
-// PROGRESS BARS ANIMATION
-// =============================================
-const barObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const bar = e.target;
-      setTimeout(() => { bar.style.width = bar.dataset.val + '%'; }, 200);
-      barObserver.unobserve(bar);
-    }
-  });
-}, { threshold: 0.3 });
-
-document.querySelectorAll('.progress-bar, .sit-bar-fill').forEach(bar => {
-  if (bar.classList.contains('sit-bar-fill')) {
-    bar.style.width = '0%';
-    barObserver.observe(bar);
-  } else {
-    barObserver.observe(bar);
-  }
-});
-
-// =============================================
 // TOAST NOTIFICATIONS
 // =============================================
 function showToast(message, type = 'info', duration = 4000) {
@@ -477,6 +455,11 @@ function renderMyTrayectoria() {
             </div>
             ${(r.actividades && r.actividades.length) ? `<div class="tray-history-activities">✅ ${r.actividades.map(a => escapeHtml(a)).join(' · ')}</div>` : ''}
             ${r.notas ? `<p class="tray-history-notes">${escapeHtml(r.notas)}</p>` : ''}
+            <div class="tray-history-actions">
+              <button class="btn-micro" onclick="editSituacionRecord('${r.id}')">✏️ Editar</button>
+              <button class="btn-micro" onclick="toggleForoRecord('${r.id}')">${r.publicadoEnForo ? '🔒 Hacer privado' : '🌍 Publicar en el Foro'}</button>
+              <button class="btn-micro" style="color:var(--red)" onclick="deleteSituacionRecord('${r.id}')">🗑️ Eliminar</button>
+            </div>
           </div>
         `).join('')}
       </div>
@@ -627,6 +610,15 @@ window.toggleLike = function(postId) {
 window.deletePost = function(postId) {
   if (!confirm('¿Eliminar esta publicación?')) return;
   savePosts(getStoredPosts().filter(p => p.id !== postId));
+  // Si el post venía de un registro de situación, ese registro vuelve a quedar privado.
+  const log = getSituacionLog();
+  const linked = log.find(r => r.forumPostId === postId);
+  if (linked) {
+    linked.publicadoEnForo = false;
+    linked.forumPostId = undefined;
+    saveSituacionLog(log);
+    renderMyTrayectoria();
+  }
   showToast('Publicación eliminada', 'info');
   renderForum();
   renderAdminPosts();
@@ -809,27 +801,82 @@ document.getElementById('btnNuevaPublicacion')?.addEventListener('click', () => 
 // =============================================
 // REGISTRO DIARIO → PUBLICACIÓN EN FORO
 // =============================================
-function openRegistro(prefillPublicar) {
+// Si estamos editando un registro existente, guarda su id; null = registro nuevo.
+let editingRecordId = null;
+
+// Crea, actualiza o elimina el post del foro ligado a un registro, según si
+// se quiere publicado o no. Devuelve el id del post vigente (o undefined).
+function syncForumPost(cu, previousForumPostId, wantsPublish, postData) {
+  const posts = getStoredPosts();
+  if (wantsPublish) {
+    const existingPost = previousForumPostId && posts.find(p => p.id === previousForumPostId);
+    if (existingPost) {
+      Object.assign(existingPost, postData);
+      savePosts(posts);
+      renderForum();
+      return existingPost.id;
+    }
+    const newPost = {
+      id: 'post-' + Date.now(), author: cu.name, authorId: cu.id,
+      date: 'Ahora mismo', category: 'emocional', catLabel: 'Registro Diario',
+      likes: 0, userLiked: false, comments: [], ...postData
+    };
+    posts.unshift(newPost);
+    savePosts(posts);
+    renderForum();
+    return newPost.id;
+  }
+  if (previousForumPostId) {
+    savePosts(posts.filter(p => p.id !== previousForumPostId));
+    renderForum();
+  }
+  return undefined;
+}
+
+function buildForumPostData(notas, childMood, caregiverMood, energyVal) {
+  const content = notas || '(Sin notas adicionales)';
+  return {
+    title: 'Registro: ' + (content.length > 45 ? content.substring(0, 45) + '...' : content),
+    content, childMood, caregiverMood, energy: energyVal + '/10'
+  };
+}
+
+// arg: undefined = registro nuevo en blanco; true = nuevo pero premarcado
+// para publicar (llegó desde "+ Publicar mi Situación" del foro);
+// objeto registro = editar ese registro existente.
+function openRegistro(arg) {
   if (!getCurrentUser()) { showToast('Inicia sesión para registrar tu situación', 'info'); openAuthModal(); return; }
+  const isEditing = arg && typeof arg === 'object';
+  editingRecordId = isEditing ? arg.id : null;
+
   const now = new Date();
   const regFecha = document.getElementById('regFecha');
   if (regFecha) regFecha.textContent = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-  // Cada registro empieza en limpio: si no reseteamos, el formulario
-  // arrastraría las notas/ánimo/actividades del registro anterior.
   const notasEl = document.getElementById('regNotas');
-  if (notasEl) notasEl.value = '';
-  document.querySelectorAll('#childMood .emoji-opt, #caregiverMood .emoji-opt').forEach(b => b.classList.remove('active'));
+  if (notasEl) notasEl.value = isEditing ? (arg.notas || '') : '';
+  document.querySelectorAll('#childMood .emoji-opt').forEach(b => b.classList.toggle('active', isEditing && b.dataset.val === arg.childMoodVal));
+  document.querySelectorAll('#caregiverMood .emoji-opt').forEach(b => b.classList.toggle('active', isEditing && b.dataset.val === arg.caregiverMoodVal));
   const slider = document.getElementById('energySlider');
   const energyValEl = document.getElementById('energyVal');
-  if (slider) slider.value = 5;
-  if (energyValEl) energyValEl.textContent = '5/10';
-  document.querySelectorAll('#activityChecks input[type="checkbox"]').forEach(cb => cb.checked = false);
+  const energyDefault = isEditing ? arg.energy : 5;
+  if (slider) slider.value = energyDefault;
+  if (energyValEl) energyValEl.textContent = energyDefault + '/10';
+  document.querySelectorAll('#activityChecks input[type="checkbox"]').forEach(cb => {
+    cb.checked = isEditing && (arg.actividades || []).includes(cb.value);
+  });
 
-  // Por defecto el registro es privado; solo viene premarcado para publicar
-  // cuando el usuario llegó desde el botón "Publicar mi Situación" del foro.
+  // Por defecto el registro es privado; premarcado para publicar si venimos
+  // de "Publicar mi Situación" del foro, o si estamos editando uno que ya
+  // estaba publicado.
   const publicarCheck = document.getElementById('regPublicarForo');
-  if (publicarCheck) publicarCheck.checked = !!prefillPublicar;
+  if (publicarCheck) publicarCheck.checked = isEditing ? !!arg.publicadoEnForo : (arg === true);
+
+  const titleEl = document.getElementById('panelRegTitle');
+  if (titleEl) titleEl.textContent = isEditing ? '✏️ Editar Registro' : '📝 Registro Diario de Situación';
+  const btnEl = document.getElementById('saveRegBtn');
+  if (btnEl) btnEl.textContent = isEditing ? '💾 Guardar Cambios' : '💾 Guardar Registro';
+
   openPanel('panelRegistro');
 }
 
@@ -837,6 +884,46 @@ document.getElementById('btnRegistrar')?.addEventListener('click',         () =>
 document.getElementById('btnRegistroSituacion')?.addEventListener('click', () => openRegistro());
 document.getElementById('panelRegClose')?.addEventListener('click',        () => closePanel('panelRegistro'));
 document.getElementById('panelRegOverlay')?.addEventListener('click',      () => closePanel('panelRegistro'));
+
+window.editSituacionRecord = function(recordId) {
+  const cu = getCurrentUser();
+  if (!cu) return;
+  const rec = getSituacionLog().find(r => r.id === recordId && r.userId === cu.id);
+  if (rec) openRegistro(rec);
+};
+
+window.deleteSituacionRecord = function(recordId) {
+  const cu = getCurrentUser();
+  if (!cu) return;
+  if (!confirm('¿Eliminar este registro de tu historial? Esta acción no se puede deshacer.')) return;
+  const log = getSituacionLog();
+  const rec = log.find(r => r.id === recordId && r.userId === cu.id);
+  if (!rec) return;
+  if (rec.forumPostId) {
+    savePosts(getStoredPosts().filter(p => p.id !== rec.forumPostId));
+    renderForum();
+  }
+  saveSituacionLog(log.filter(r => r.id !== recordId));
+  flagRiskCase(cu, computeRiskForUser(cu.id).level);
+  showToast('🗑️ Registro eliminado', 'info');
+  renderMyTrayectoria();
+};
+
+window.toggleForoRecord = function(recordId) {
+  const cu = getCurrentUser();
+  if (!cu) return;
+  const log = getSituacionLog();
+  const idx = log.findIndex(r => r.id === recordId && r.userId === cu.id);
+  if (idx === -1) return;
+  const rec = log[idx];
+  const wantsPublish = !rec.publicadoEnForo;
+  const postData = buildForumPostData(rec.notas, rec.childMood, rec.caregiverMood, rec.energy);
+  const forumPostId = syncForumPost(cu, rec.forumPostId, wantsPublish, postData);
+  log[idx] = { ...rec, publicadoEnForo: wantsPublish, forumPostId };
+  saveSituacionLog(log);
+  showToast(wantsPublish ? '🌍 Registro publicado en el Foro' : '🔒 Registro pasado a privado', 'success');
+  renderMyTrayectoria();
+};
 
 document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const cu = getCurrentUser();
@@ -851,45 +938,53 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const caregiverMood    = caregiverOpt ? caregiverOpt.title : '😐 Regular';
   const publicarForo     = document.getElementById('regPublicarForo')?.checked || false;
   const actividades      = [...document.querySelectorAll('#activityChecks input:checked')].map(cb => cb.value);
-
-  // Registro estructurado por usuario: siempre privado, alimenta "Mi
-  // Trayectoria" y la detección de riesgo. Publicarlo en el foro es una
-  // decisión explícita y aparte (checkbox desmarcado por defecto).
+  const wantsPublish     = !!(notas && publicarForo);
   const log = getSituacionLog();
+
+  // MODO EDICIÓN: actualiza el registro existente y sincroniza su post del foro.
+  if (editingRecordId) {
+    const idx = log.findIndex(r => r.id === editingRecordId && r.userId === cu.id);
+    if (idx === -1) { showToast('No se encontró el registro', 'error'); editingRecordId = null; closePanel('panelRegistro'); return; }
+    const existing = log[idx];
+    const postData = buildForumPostData(notas, childMood, caregiverMood, energyVal);
+    const forumPostId = syncForumPost(cu, existing.forumPostId, wantsPublish, postData);
+    log[idx] = {
+      ...existing, childMoodVal, caregiverMoodVal, childMood, caregiverMood,
+      energy: energyVal, notas: notas || '', actividades, publicadoEnForo: wantsPublish, forumPostId
+    };
+    saveSituacionLog(log);
+    flagRiskCase(cu, computeRiskForUser(cu.id).level);
+    showToast('✏️ Registro actualizado' + (wantsPublish ? ' (publicado en el Foro)' : ''), 'success');
+    editingRecordId = null;
+    renderMyTrayectoria();
+    closePanel('panelRegistro');
+    return;
+  }
+
+  // MODO CREACIÓN: registro estructurado por usuario, siempre privado salvo
+  // que se marque explícitamente publicarlo en el foro.
+  const forumPostId = wantsPublish ? syncForumPost(cu, undefined, true, buildForumPostData(notas, childMood, caregiverMood, energyVal)) : undefined;
   log.push({
     id: 'reg-' + Date.now(), userId: cu.id, userName: cu.name,
     timestamp: Date.now(), childMoodVal, caregiverMoodVal,
     childMood, caregiverMood, energy: energyVal, notas: notas || '',
-    actividades, publicadoEnForo: !!(notas && publicarForo)
+    actividades, publicadoEnForo: wantsPublish, forumPostId
   });
   saveSituacionLog(log);
 
   const risk = computeRiskForUser(cu.id);
   flagRiskCase(cu, risk.level);
 
-  if (notas && publicarForo) {
-    const posts = getStoredPosts();
-    posts.unshift({
-      id: 'post-' + Date.now(), author: cu.name, authorId: cu.id,
-      date: 'Ahora mismo', category: 'emocional', catLabel: 'Registro Diario',
-      title: 'Registro: ' + (notas.length > 45 ? notas.substring(0,45) + '...' : notas),
-      content: notas, childMood, caregiverMood,
-      energy: energyVal + '/10', likes: 0, userLiked: false, comments: []
-    });
-    savePosts(posts);
-    renderForum();
-  }
-
   if (risk.level === 'grave') {
     showToast('💜 Detectamos varios días difíciles seguidos. Tu caso quedó marcado como prioritario para que nuestro equipo te contacte.', 'error', 7000);
   } else {
-    showToast('💾 Situación guardada en privado' + (notas && publicarForo ? ' y publicada en el Foro' : ''), 'success');
+    showToast('💾 Situación guardada en privado' + (wantsPublish ? ' y publicada en el Foro' : ''), 'success');
   }
 
   renderMyTrayectoria();
   setTimeout(() => {
     closePanel('panelRegistro');
-    goToPage(PAGE_IDS.indexOf(notas && publicarForo ? 'foro' : 'situacion'));
+    goToPage(PAGE_IDS.indexOf(wantsPublish ? 'foro' : 'situacion'));
   }, 900);
 });
 
@@ -1361,18 +1456,6 @@ document.getElementById('btnNotif')?.addEventListener('click', () => {
   goToPage(PAGE_IDS.indexOf('alertas'));
 });
 
-document.querySelectorAll('.btn-micro[data-modal]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const msgs = {
-      burnout:   'El 68% de los cuidadores muestran signos de agotamiento. Ha aumentado un 5% esta semana.',
-      apoyo:     '312 familias con apoyo activo: 180 domiciliario, 92 con trabajador/a social, 40 en programa de respiro.',
-      servicios: '47 familias sin acceso a servicios. Se trabaja en derivaciones urgentes para 12 casos críticos.',
-      emocional: '84% reportan estado emocional positivo. El 16% restante está en seguimiento activo.'
-    };
-    showToast(msgs[btn.dataset.modal] || 'Cargando detalles...', 'info', 6000);
-  });
-});
-
 // =============================================
 // ENTRANCE ANIMATIONS
 // =============================================
@@ -1386,7 +1469,7 @@ const fadeObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.indicator-card,.tool-card,.news-card,.res-card,.info-stat-card,.alert-item,.tl-item').forEach((el,i) => {
+document.querySelectorAll('.tool-card,.news-card,.res-card,.info-stat-card,.alert-item,.tl-item').forEach((el,i) => {
   el.style.opacity   = '0';
   el.style.transform = 'translateY(24px)';
   el.style.transition = `opacity 0.5s ease ${i*0.05}s, transform 0.5s ease ${i*0.05}s`;

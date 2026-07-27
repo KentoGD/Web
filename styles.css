@@ -318,10 +318,9 @@ section { padding: 90px 0; }
 .section-sub.light { color: rgba(255,255,255,0.8); }
 
 /* =============================================
-   INDICATORS
+   MI SITUACIÓN (panel personal del usuario)
    ============================================= */
 .quick-indicators { background: var(--bg-section); }
-.indicators-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 20px; margin-bottom: 48px; }
 /* MI TRAYECTORIA PERSONAL */
 .trayectoria-card {
   background: white; border: 2px solid var(--border); border-radius: var(--radius);
@@ -367,36 +366,7 @@ section { padding: 90px 0; }
 .tray-pill-public  { color: var(--blue); border-color: rgba(0,114,187,0.3); }
 .tray-history-activities { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 .tray-history-notes { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-top: 6px; }
-
-.indicator-card {
-  background: white; border: 2px solid var(--border);
-  border-radius: var(--radius); padding: 28px; transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-}
-.indicator-card:hover { border-color: var(--blue-light); transform: translateY(-4px); box-shadow: var(--shadow-md); }
-
-.card-purple { border-top: 4px solid var(--purple); }
-.card-teal   { border-top: 4px solid var(--teal); }
-.card-blue   { border-top: 4px solid var(--blue); }
-.card-pink   { border-top: 4px solid var(--pink); }
-
-.ind-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.ind-icon { font-size: 1.8rem; }
-.ind-status { font-size: 0.7rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px; }
-.status-alert { background: #FFF3CD; color: #856404; border: 1px solid #FFEEBA; }
-.status-ok    { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
-.status-warn  { background: var(--blue-pale); color: var(--blue-dark); border: 1px solid rgba(0,114,187,0.3); }
-
-.ind-main { margin-bottom: 16px; }
-.ind-number { font-size: 2.8rem; font-weight: 900; color: var(--text-primary); line-height: 1; }
-.ind-unit { font-size: 1.5rem; }
-.ind-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
-.progress-bar-wrap { height: 8px; background: var(--bg-section); border-radius: 4px; margin-bottom: 16px; overflow: hidden; }
-.progress-bar { height: 100%; background: var(--clr, var(--blue)); border-radius: 4px; width: 0; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); }
-.ind-footer { display: flex; justify-content: space-between; align-items: center; }
-.trend { font-size: 0.78rem; font-weight: 700; }
-.trend-up { color: var(--gold); }
-.trend-down { color: var(--green); }
+.tray-history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
 .btn-micro {
   background: var(--bg-section); border: 1px solid var(--border);
@@ -404,49 +374,6 @@ section { padding: 90px 0; }
   padding: 5px 12px; border-radius: var(--radius-xs); cursor: pointer; transition: var(--transition);
 }
 .btn-micro:hover { background: var(--blue-pale); color: var(--blue); border-color: var(--blue-light); }
-
-/* Situation map */
-.situation-map-section { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; }
-.map-card, .donut-card {
-  background: white; border: 2px solid var(--border);
-  border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-sm);
-}
-.map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
-.map-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
-.map-legend { display: flex; gap: 16px; flex-wrap: wrap; }
-.leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); }
-.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot-critical { background: var(--red); }
-.dot-medium { background: var(--gold); }
-.dot-stable { background: var(--green); }
-
-.sit-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.sit-label { font-size: 0.82rem; color: var(--text-secondary); width: 200px; flex-shrink: 0; }
-.sit-bar-track { flex: 1; height: 10px; background: var(--bg-section); border-radius: 5px; overflow: hidden; }
-.sit-bar-fill { height: 100%; border-radius: 5px; width: 0; transition: width 1.8s cubic-bezier(0.4,0,0.2,1); }
-.sit-bar-fill.critical { background: linear-gradient(90deg, var(--red), #FF8080); }
-.sit-bar-fill.medium   { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
-.sit-bar-fill.stable   { background: linear-gradient(90deg, var(--green), var(--teal-light)); }
-.sit-pct { font-size: 0.82rem; font-weight: 700; width: 38px; text-align: right; color: var(--text-secondary); }
-
-.donut-card { display: flex; flex-direction: column; align-items: center; }
-.donut-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; color: var(--text-primary); }
-.donut-wrap { position: relative; width: 180px; height: 180px; margin-bottom: 24px; }
-.donut-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.donut-bg { fill: none; stroke: var(--bg-section); stroke-width: 14; }
-.donut-seg { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dasharray 1.5s ease; }
-.seg-critical { stroke: var(--red); }
-.seg-medium   { stroke: var(--gold); }
-.seg-stable   { stroke: var(--green); }
-.donut-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.donut-total { font-size: 2rem; font-weight: 900; color: var(--text-primary); }
-.donut-sub { font-size: 0.75rem; color: var(--text-muted); }
-.donut-legend { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-.d-leg { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-secondary); }
-.d-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.dc { background: var(--red); }
-.dm { background: var(--gold); }
-.ds { background: var(--green); }
 
 /* =============================================
    TOOLS SECTION

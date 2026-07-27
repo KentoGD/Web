@@ -102,155 +102,14 @@
   <section class="page-section quick-indicators" id="situacion">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Estado en tiempo real</span>
-        <h2 class="section-title">Situación de los Cuidadores</h2>
-        <p class="section-sub">Indicadores clave actualizados sobre el bienestar, carga y necesidades de las familias cuidadoras</p>
+        <span class="section-tag">Tu seguimiento personal</span>
+        <h2 class="section-title">Mi Situación</h2>
+        <p class="section-sub">Tu historial diario: estado de ánimo, energía y actividades. Solo vos podés verlo.</p>
       </div>
 
       <!-- MI TRAYECTORIA PERSONAL -->
       <div class="trayectoria-card" id="miTrayectoriaCard">
         <!-- Populated by JS -->
-      </div>
-
-      <div class="indicators-grid">
-        <div class="indicator-card card-purple" id="card-burnout">
-          <div class="ind-header">
-            <span class="ind-icon">🧠</span>
-            <span class="ind-status status-alert">Atención</span>
-          </div>
-          <div class="ind-main">
-            <div class="ind-number">68<span class="ind-unit">%</span></div>
-            <div class="ind-label">Nivel de Agotamiento</div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" data-val="68" style="--clr:#f59e0b"></div>
-          </div>
-          <div class="ind-footer">
-            <span class="trend trend-up">↑ 5% esta semana</span>
-            <button class="btn-micro" data-modal="burnout">Ver detalle</button>
-          </div>
-        </div>
-
-        <div class="indicator-card card-teal" id="card-apoyo">
-          <div class="ind-header">
-            <span class="ind-icon">🤝</span>
-            <span class="ind-status status-ok">Activo</span>
-          </div>
-          <div class="ind-main">
-            <div class="ind-number">312</div>
-            <div class="ind-label">Casos con Apoyo Activo</div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" data-val="81" style="--clr:#10b981"></div>
-          </div>
-          <div class="ind-footer">
-            <span class="trend trend-up">↑ 12 nuevos</span>
-            <button class="btn-micro" data-modal="apoyo">Ver detalle</button>
-          </div>
-        </div>
-
-        <div class="indicator-card card-blue" id="card-servicios">
-          <div class="ind-header">
-            <span class="ind-icon">🏥</span>
-            <span class="ind-status status-warn">Pendiente</span>
-          </div>
-          <div class="ind-main">
-            <div class="ind-number">47</div>
-            <div class="ind-label">Sin acceso a servicios</div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" data-val="37" style="--clr:#6366f1"></div>
-          </div>
-          <div class="ind-footer">
-            <span class="trend trend-down">↓ Mejorando</span>
-            <button class="btn-micro" data-modal="servicios">Ver detalle</button>
-          </div>
-        </div>
-
-        <div class="indicator-card card-pink" id="card-emocional">
-          <div class="ind-header">
-            <span class="ind-icon">💗</span>
-            <span class="ind-status status-ok">Monitoreado</span>
-          </div>
-          <div class="ind-main">
-            <div class="ind-number">84<span class="ind-unit">%</span></div>
-            <div class="ind-label">Salud Emocional Positiva</div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" data-val="84" style="--clr:#ec4899"></div>
-          </div>
-          <div class="ind-footer">
-            <span class="trend trend-up">↑ Estable</span>
-            <button class="btn-micro" data-modal="emocional">Ver detalle</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- MAPA DE SITUACIÓN -->
-      <div class="situation-map-section">
-        <div class="map-card">
-          <div class="map-header">
-            <h3>🗺️ Distribución por Situación</h3>
-            <div class="map-legend">
-              <span class="leg-item"><span class="leg-dot dot-critical"></span>Crítica</span>
-              <span class="leg-item"><span class="leg-dot dot-medium"></span>Moderada</span>
-              <span class="leg-item"><span class="leg-dot dot-stable"></span>Estable</span>
-            </div>
-          </div>
-          <div class="situation-bars">
-            <div class="sit-bar-row">
-              <span class="sit-label">Carga severa de cuidado</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill critical" data-w="72"></div></div>
-              <span class="sit-pct">72%</span>
-            </div>
-            <div class="sit-bar-row">
-              <span class="sit-label">Falta de descanso nocturno</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill critical" data-w="65"></div></div>
-              <span class="sit-pct">65%</span>
-            </div>
-            <div class="sit-bar-row">
-              <span class="sit-label">Apoyo económico insuficiente</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill medium" data-w="58"></div></div>
-              <span class="sit-pct">58%</span>
-            </div>
-            <div class="sit-bar-row">
-              <span class="sit-label">Aislamiento social</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill medium" data-w="44"></div></div>
-              <span class="sit-pct">44%</span>
-            </div>
-            <div class="sit-bar-row">
-              <span class="sit-label">Acceso a terapias</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill stable" data-w="38"></div></div>
-              <span class="sit-pct">38%</span>
-            </div>
-            <div class="sit-bar-row">
-              <span class="sit-label">Coordinación sanitaria</span>
-              <div class="sit-bar-track"><div class="sit-bar-fill stable" data-w="21"></div></div>
-              <span class="sit-pct">21%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="donut-card">
-          <h3>Estado General</h3>
-          <div class="donut-wrap">
-            <svg class="donut-svg" viewBox="0 0 120 120">
-              <circle class="donut-bg" cx="60" cy="60" r="50" />
-              <circle class="donut-seg seg-critical" cx="60" cy="60" r="50" stroke-dasharray="94 220" stroke-dashoffset="0" />
-              <circle class="donut-seg seg-medium" cx="60" cy="60" r="50" stroke-dasharray="82 220" stroke-dashoffset="-94" />
-              <circle class="donut-seg seg-stable" cx="60" cy="60" r="50" stroke-dasharray="44 220" stroke-dashoffset="-176" />
-            </svg>
-            <div class="donut-center-text">
-              <span class="donut-total">384</span>
-              <span class="donut-sub">casos</span>
-            </div>
-          </div>
-          <div class="donut-legend">
-            <div class="d-leg"><span class="d-dot dc"></span><span>Crítica <strong>43%</strong></span></div>
-            <div class="d-leg"><span class="d-dot dm"></span><span>Moderada <strong>37%</strong></span></div>
-            <div class="d-leg"><span class="d-dot ds"></span><span>Estable <strong>20%</strong></span></div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -507,7 +366,7 @@
     <div class="panel-overlay" id="panelRegOverlay"></div>
     <div class="panel-content">
       <button class="panel-close" id="panelRegClose">✕</button>
-      <h2 class="panel-title">📝 Registro Diario de Situación</h2>
+      <h2 class="panel-title" id="panelRegTitle">📝 Registro Diario de Situación</h2>
       <p class="panel-sub">Fecha: <strong id="regFecha"></strong></p>
       <div class="reg-form">
         <div class="reg-group">
