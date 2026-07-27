@@ -1,8 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 62" width="120" height="62" role="img" aria-label="NANA">
-  <path d="M60 31
-           C71 14 92 14 92 31
-           C92 48 71 48 60 31
-           C49 14 28 14 28 31
-           C28 48 49 48 60 31 Z"
-        fill="none" stroke="#62B8B0" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="33 7 154 184" width="154" height="184" role="img" aria-label="NANA">
+  <!-- ADULTO: cabeza + masa sólida que envuelve -->
+  <circle cx="110" cy="38" r="27" fill="#40708F"/>
+  <circle cx="100" cy="118" r="63" fill="#40708F"/>
+
+  <!-- NIÑO: silueta blanca compacta dentro del abrazo -->
+  <circle cx="72" cy="84" r="19" fill="#FFFFFF"/>
+  <ellipse cx="74" cy="118" rx="26" ry="23" fill="#FFFFFF"/>
+
+  <!-- INFINITO (neurodiversidad), abajo a la derecha -->
+  <path d="M140 162
+           C150 145 176 145 176 162
+           C176 179 150 179 140 162
+           C130 145 104 145 104 162
+           C104 179 130 179 140 162 Z"
+        fill="none" stroke="#62B8B0" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- PERRO dentro del lazo derecho -->
+  <g fill="#40708F">
+    <path d="M159 153 c-1 -6 1 -9 4 -8 c3 1 4 4 4 9 z"/>
+    <path d="M177 153 c1 -6 -1 -9 -4 -8 c-3 1 -4 4 -4 9 z"/>
+    <ellipse cx="168" cy="163" rx="11" ry="10"/>
+  </g>
+  <circle cx="164" cy="160.5" r="1.9" fill="#EAF6F4"/>
+  <circle cx="172" cy="160.5" r="1.9" fill="#EAF6F4"/>
+  <ellipse cx="168" cy="167" rx="2.6" ry="2" fill="#EAF6F4"/>
 </svg>

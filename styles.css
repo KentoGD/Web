@@ -126,8 +126,8 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 }
 .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 800; letter-spacing: 1.5px; white-space: nowrap; color: var(--blue-dark); }
 .brand-icon { font-size: 1.4rem; animation: pulse-icon 2.5s ease-in-out infinite; }
-.brand-logo { height: 40px; width: auto; display: block; flex-shrink: 0; }
-.footer-logo { height: 52px; margin-bottom: 4px; }
+.brand-logo { height: 44px; width: auto; display: block; flex-shrink: 0; }
+.footer-logo { height: 62px; margin-bottom: 6px; }
 @keyframes pulse-icon { 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
 
 .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; flex: 1; justify-content: center; }
@@ -167,7 +167,7 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 .hero {
   min-height: 100vh; flex-direction: column;
   justify-content: center; align-items: center;
-  padding: 140px 24px 60px; position: relative; overflow: hidden;
+  padding: 108px 24px 50px; position: relative; overflow: hidden;
   background: transparent;
 }
 .hero-bg-shapes { position: absolute; inset: 0; pointer-events: none; }
@@ -175,13 +175,13 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 /* Cabecera de marca del hero: logo + nombre completo */
 .hero-brand {
   position: relative; z-index: 1;
-  max-width: 1200px; width: 100%; margin: 0 auto 48px;
-  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+  max-width: 1200px; width: 100%; margin: 0 auto 34px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px;
 }
-.hero-brand-logo { height: 62px; width: auto; margin-bottom: 10px; }
+.hero-brand-logo { height: 92px; width: auto; margin-bottom: 12px; }
 .hero-brand-name {
   font-family: 'Baloo 2', 'Quicksand', sans-serif;
-  font-size: clamp(2.8rem, 7vw, 5rem); font-weight: 800;
+  font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 800;
   letter-spacing: 0.14em; line-height: 1; margin-left: 0.14em;
   color: var(--blue-dark);
 }
@@ -194,7 +194,7 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
 
 @media (max-width: 768px) {
   .hero-brand { margin-bottom: 32px; }
-  .hero-brand-logo { height: 46px; }
+  .hero-brand-logo { height: 84px; }
 }
 .shape {
   position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25;
