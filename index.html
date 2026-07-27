@@ -336,28 +336,8 @@
     <div class="panel-content">
       <button class="panel-close" id="panelPlanClose">✕</button>
       <h2 class="panel-title">📅 Planificador Semanal</h2>
-      <p class="panel-sub">Organiza las actividades de cuidado de la semana</p>
+      <p class="panel-sub">Tocá un evento para ver el detalle. El equipo lo mantiene actualizado desde Moderación.</p>
       <div class="planner-grid" id="plannerGrid"></div>
-      <div class="planner-add">
-        <input type="text" class="planner-input" id="plannerInput" placeholder="Nueva actividad..." />
-        <select class="planner-select" id="plannerDay">
-          <option value="Lun">Lunes</option>
-          <option value="Mar">Martes</option>
-          <option value="Mié">Miércoles</option>
-          <option value="Jue">Jueves</option>
-          <option value="Vie">Viernes</option>
-          <option value="Sáb">Sábado</option>
-          <option value="Dom">Domingo</option>
-        </select>
-        <select class="planner-select" id="plannerType">
-          <option value="terapia">🏥 Terapia</option>
-          <option value="medico">💊 Médico</option>
-          <option value="rutina">🌅 Rutina</option>
-          <option value="ocio">🎮 Ocio</option>
-          <option value="descanso">😴 Descanso</option>
-        </select>
-        <button class="btn-primary sm" id="plannerAddBtn">Añadir</button>
-      </div>
     </div>
   </div>
 
@@ -546,6 +526,7 @@
         <button class="nfilter" id="btnTabPortada" onclick="switchAdminTab('portada')">🏠 Familia en Portada</button>
         <button class="nfilter" id="btnTabRiesgo" onclick="switchAdminTab('riesgo')">🚨 Casos de Riesgo</button>
         <button class="nfilter" id="btnTabNoticias" onclick="switchAdminTab('noticias')">📰 Noticias</button>
+        <button class="nfilter" id="btnTabPlanner" onclick="switchAdminTab('planner')">📅 Planificador</button>
       </div>
 
       <!-- LISTA DE USUARIOS -->
@@ -593,6 +574,17 @@
           <button class="btn-primary sm" onclick="openNoticiaForm()">+ Nueva Noticia</button>
         </div>
         <div id="adminNoticiasList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- GESTIÓN DEL PLANIFICADOR -->
+      <div id="adminPlannerTab" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <p style="font-size:0.83rem;color:var(--text-secondary);max-width:420px;line-height:1.5;">Creá, editá o eliminá los eventos del Planificador Semanal. Podés sumarles foto y enlace.</p>
+          <button class="btn-primary sm" onclick="openEventoForm()">+ Nuevo Evento</button>
+        </div>
+        <div id="adminPlannerList" style="display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;">
           <!-- Populated by JS -->
         </div>
       </div>
@@ -650,6 +642,76 @@
           </label>
         </div>
         <button class="btn-primary full" id="saveNoticiaBtn">💾 Publicar Noticia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETALLE DE EVENTO DEL PLANIFICADOR -->
+  <div class="tool-panel" id="panelEventoDetail">
+    <div class="panel-overlay" id="panelEventoDetailOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelEventoDetailClose">✕</button>
+      <div id="eventoDetailContainer"><!-- Populated by JS --></div>
+    </div>
+  </div>
+
+  <!-- CREAR / EDITAR EVENTO DEL PLANIFICADOR (admin) -->
+  <div class="tool-panel" id="panelEventoForm">
+    <div class="panel-overlay" id="panelEventoFormOverlay"></div>
+    <div class="panel-content">
+      <button class="panel-close" id="panelEventoFormClose">✕</button>
+      <h2 class="panel-title" id="panelEventoFormTitle">📅 Nuevo Evento</h2>
+      <p class="panel-sub">Se refleja al instante en el Planificador Semanal</p>
+      <div class="reg-form">
+        <div class="reg-group">
+          <label class="reg-label">Título</label>
+          <input type="text" class="planner-input full-w" id="eventoTitulo" placeholder="Ej. Fisioterapia" />
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Día</label>
+          <select class="planner-select full-w" id="eventoDia">
+            <option value="Lun">Lunes</option>
+            <option value="Mar">Martes</option>
+            <option value="Mié">Miércoles</option>
+            <option value="Jue">Jueves</option>
+            <option value="Vie">Viernes</option>
+            <option value="Sáb">Sábado</option>
+            <option value="Dom">Domingo</option>
+          </select>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Tipo</label>
+          <select class="planner-select full-w" id="eventoTipo">
+            <option value="terapia">🏥 Terapia</option>
+            <option value="medico">💊 Médico</option>
+            <option value="rutina">🌅 Rutina</option>
+            <option value="ocio">🎮 Ocio</option>
+            <option value="descanso">😴 Descanso</option>
+          </select>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Descripción (opcional)</label>
+          <textarea class="reg-textarea" id="eventoDescripcion" placeholder="Detalles del evento..."></textarea>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Foto (opcional)</label>
+          <div class="reply-attach-row">
+            <label class="reply-attach-btn" for="eventoImageInput" title="Adjuntar foto">
+              📷 Añadir foto
+              <input type="file" id="eventoImageInput" accept="image/*" style="display:none"
+                     onchange="previewEventoImage(event)" />
+            </label>
+          </div>
+          <div id="eventoImagePreview" class="reply-image-preview hidden">
+            <img id="eventoPreviewImg" src="" alt="Vista previa" />
+            <button class="reply-remove-img" onclick="removeEventoImage()" title="Quitar foto">✕</button>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="reg-label">Enlace externo (opcional)</label>
+          <input type="url" class="planner-input full-w" id="eventoLink" placeholder="https://..." />
+        </div>
+        <button class="btn-primary full" id="saveEventoBtn">💾 Guardar Evento</button>
       </div>
     </div>
   </div>

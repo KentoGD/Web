@@ -1092,6 +1092,7 @@ window.openAdminPanel = function() {
   renderAdminPosts();
   renderAdminRiesgo();
   renderAdminNoticias();
+  renderAdminPlanner();
   openPanel('panelAdmin');
 };
 document.getElementById('panelAdminClose')?.addEventListener('click',  () => closePanel('panelAdmin'));
@@ -1103,14 +1104,17 @@ window.switchAdminTab = function(tab) {
   document.getElementById('btnTabPortada').classList.toggle('active', tab === 'portada');
   document.getElementById('btnTabRiesgo').classList.toggle('active', tab === 'riesgo');
   document.getElementById('btnTabNoticias').classList.toggle('active', tab === 'noticias');
+  document.getElementById('btnTabPlanner').classList.toggle('active', tab === 'planner');
   document.getElementById('adminUsersTab').classList.toggle('hidden', tab !== 'users');
   document.getElementById('adminPostsTab').classList.toggle('hidden', tab !== 'posts');
   document.getElementById('adminPortadaTab').classList.toggle('hidden', tab !== 'portada');
   document.getElementById('adminRiesgoTab').classList.toggle('hidden', tab !== 'riesgo');
   document.getElementById('adminNoticiasTab').classList.toggle('hidden', tab !== 'noticias');
+  document.getElementById('adminPlannerTab').classList.toggle('hidden', tab !== 'planner');
   if (tab === 'portada') renderAdminPortada();
   if (tab === 'riesgo') renderAdminRiesgo();
   if (tab === 'noticias') renderAdminNoticias();
+  if (tab === 'planner') renderAdminPlanner();
 };
 
 function renderAdminUsers() {
@@ -1626,45 +1630,203 @@ document.getElementById('panelTestClose')?.addEventListener('click',  () => clos
 document.getElementById('panelTestOverlay')?.addEventListener('click',() => closePanel('panelTest'));
 
 // =============================================
-// PLANIFICADOR SEMANAL
+// PLANIFICADOR SEMANAL (localStorage, gestionable por el admin)
 // =============================================
 const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const plannerData = {
-  Lun:[{text:'Fisioterapia',type:'terapia'},{text:'Medicación',type:'medico'}],
-  Mar:[{text:'Logopedia',type:'terapia'}],
-  Mié:[{text:'Médico',type:'medico'},{text:'Juego libre',type:'ocio'}],
-  Jue:[{text:'T. Ocupacional',type:'terapia'}],
-  Vie:[{text:'Rutina mañana',type:'rutina'},{text:'Parque',type:'ocio'}],
-  Sáb:[{text:'Descanso cuidador',type:'descanso'}],
-  Dom:[{text:'Familia',type:'ocio'}]
+const PLANNER_TYPES = {
+  terapia:  { label: 'Terapia',  emoji: '🏥' },
+  medico:   { label: 'Médico',   emoji: '💊' },
+  rutina:   { label: 'Rutina',   emoji: '🌅' },
+  ocio:     { label: 'Ocio',     emoji: '🎮' },
+  descanso: { label: 'Descanso', emoji: '😴' }
 };
+
+const SEED_PLANNER_EVENTS = [
+  { id: 'evt-1', day: 'Lun', text: 'Fisioterapia',      type: 'terapia',  description: null, image: null, link: null },
+  { id: 'evt-2', day: 'Lun', text: 'Medicación',        type: 'medico',   description: null, image: null, link: null },
+  { id: 'evt-3', day: 'Mar', text: 'Logopedia',         type: 'terapia',  description: null, image: null, link: null },
+  { id: 'evt-4', day: 'Mié', text: 'Médico',            type: 'medico',   description: null, image: null, link: null },
+  { id: 'evt-5', day: 'Mié', text: 'Juego libre',       type: 'ocio',     description: null, image: null, link: null },
+  { id: 'evt-6', day: 'Jue', text: 'T. Ocupacional',    type: 'terapia',  description: null, image: null, link: null },
+  { id: 'evt-7', day: 'Vie', text: 'Rutina mañana',     type: 'rutina',   description: null, image: null, link: null },
+  { id: 'evt-8', day: 'Vie', text: 'Parque',            type: 'ocio',     description: null, image: null, link: null },
+  { id: 'evt-9', day: 'Sáb', text: 'Descanso cuidador', type: 'descanso', description: null, image: null, link: null },
+  { id: 'evt-10', day: 'Dom', text: 'Familia',          type: 'ocio',     description: null, image: null, link: null }
+];
+
+let _plannerCache = null;
+function getPlannerEvents() {
+  if (_plannerCache) return _plannerCache;
+  const data = localStorage.getItem('cuidapp_planner_events');
+  _plannerCache = data ? JSON.parse(data) : SEED_PLANNER_EVENTS;
+  if (!data) localStorage.setItem('cuidapp_planner_events', JSON.stringify(_plannerCache));
+  return _plannerCache;
+}
+function savePlannerEvents(events) { _plannerCache = events; localStorage.setItem('cuidapp_planner_events', JSON.stringify(events)); }
 
 function renderPlanner() {
   const grid = document.getElementById('plannerGrid');
   if (!grid) return;
+  const events = getPlannerEvents();
   grid.innerHTML = days.map(day => `
     <div class="planner-day-col" data-day="${day}">
       <div class="planner-day-header">${day}</div>
-      ${(plannerData[day]||[]).map(t => `<div class="planner-task ${escapeHtml(t.type)}" title="${escapeHtml(t.text)}">${escapeHtml(t.text)}</div>`).join('')}
+      ${events.filter(e => e.day === day).map(e => `
+        <div class="planner-task ${escapeHtml(e.type)}" title="${escapeHtml(e.text)}" onclick="openEventoDetail('${e.id}')">
+          ${escapeHtml(e.text)}${e.image ? ' 📷' : ''}${e.link ? ' 🔗' : ''}
+        </div>
+      `).join('')}
     </div>`).join('');
 }
-
-document.getElementById('plannerAddBtn')?.addEventListener('click', () => {
-  const input = document.getElementById('plannerInput');
-  const day   = document.getElementById('plannerDay').value;
-  const type  = document.getElementById('plannerType').value;
-  const text  = input.value.trim();
-  if (!text) { showToast('Escribe una actividad', 'error'); return; }
-  if (!plannerData[day]) plannerData[day] = [];
-  plannerData[day].push({ text, type });
-  renderPlanner();
-  input.value = '';
-  showToast(`"${text}" añadido el ${day}`, 'success');
-});
 
 document.getElementById('btnPlanificador')?.addEventListener('click', () => { renderPlanner(); openPanel('panelPlanificador'); });
 document.getElementById('panelPlanClose')?.addEventListener('click',  () => closePanel('panelPlanificador'));
 document.getElementById('panelPlanOverlay')?.addEventListener('click',() => closePanel('panelPlanificador'));
+
+// --- Ver detalle de un evento (cualquier usuario) ---
+window.openEventoDetail = function(eventoId) {
+  const evento = getPlannerEvents().find(e => e.id === eventoId);
+  if (!evento) return;
+  const cu = getCurrentUser();
+  const isAdmin = !!(cu && cu.role === 'admin');
+  const meta = PLANNER_TYPES[evento.type] || PLANNER_TYPES.rutina;
+
+  document.getElementById('eventoDetailContainer').innerHTML = `
+    <span class="forum-tag">${meta.emoji} ${meta.label} · ${escapeHtml(evento.day)}</span>
+    <h2 style="font-size:1.15rem;font-weight:800;margin:12px 0;color:var(--text-primary)">${escapeHtml(evento.text)}</h2>
+    ${evento.image ? `<img src="${escapeHtml(evento.image)}" alt="" style="width:100%;border-radius:12px;margin-bottom:14px;max-height:260px;object-fit:cover;" />` : ''}
+    ${evento.description ? `<p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">${escapeHtml(evento.description)}</p>` : ''}
+    ${evento.link ? `<a href="${escapeHtml(evento.link)}" target="_blank" rel="noopener noreferrer" class="comment-link">🔗 ${escapeHtml(evento.link)}</a>` : ''}
+    ${isAdmin ? `
+      <div style="display:flex;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+        <button class="btn-secondary sm" onclick="closePanel('panelEventoDetail');openEventoForm('${evento.id}')">✏️ Editar</button>
+        <button class="btn-secondary sm" style="color:var(--red);border-color:var(--red)" onclick="deleteEvento('${evento.id}')">🗑️ Eliminar</button>
+      </div>` : ''}
+  `;
+  openPanel('panelEventoDetail');
+};
+document.getElementById('panelEventoDetailClose')?.addEventListener('click',   () => closePanel('panelEventoDetail'));
+document.getElementById('panelEventoDetailOverlay')?.addEventListener('click', () => closePanel('panelEventoDetail'));
+
+// --- Crear / editar evento (solo admin, desde Moderación o desde el detalle) ---
+let editingEventoId = null;
+
+window.openEventoForm = function(eventoId) {
+  const cu = getCurrentUser();
+  if (!cu || cu.role !== 'admin') return;
+  const evento = eventoId ? getPlannerEvents().find(e => e.id === eventoId) : null;
+  editingEventoId = evento ? evento.id : null;
+
+  document.getElementById('panelEventoFormTitle').textContent = evento ? '✏️ Editar Evento' : '📅 Nuevo Evento';
+  document.getElementById('eventoTitulo').value = evento ? evento.text : '';
+  document.getElementById('eventoDia').value = evento ? evento.day : 'Lun';
+  document.getElementById('eventoTipo').value = evento ? evento.type : 'terapia';
+  document.getElementById('eventoDescripcion').value = evento && evento.description ? evento.description : '';
+  document.getElementById('eventoLink').value = evento && evento.link ? evento.link : '';
+
+  const preview = document.getElementById('eventoImagePreview');
+  const img = document.getElementById('eventoPreviewImg');
+  document.getElementById('eventoImageInput').value = '';
+  if (evento && evento.image) {
+    img.src = evento.image;
+    preview.classList.remove('hidden');
+  } else {
+    img.src = '';
+    preview.classList.add('hidden');
+  }
+
+  openPanel('panelEventoForm');
+};
+document.getElementById('panelEventoFormClose')?.addEventListener('click',   () => closePanel('panelEventoForm'));
+document.getElementById('panelEventoFormOverlay')?.addEventListener('click', () => closePanel('panelEventoForm'));
+
+window.previewEventoImage = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    showToast('La imagen no puede superar 3 MB', 'error'); e.target.value = ''; return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('eventoPreviewImg').src = ev.target.result;
+    document.getElementById('eventoImagePreview').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+};
+
+window.removeEventoImage = function() {
+  document.getElementById('eventoImageInput').value = '';
+  document.getElementById('eventoImagePreview').classList.add('hidden');
+  document.getElementById('eventoPreviewImg').src = '';
+};
+
+document.getElementById('saveEventoBtn')?.addEventListener('click', () => {
+  const cu = getCurrentUser();
+  if (!cu || cu.role !== 'admin') return;
+  const text        = document.getElementById('eventoTitulo')?.value.trim();
+  const day         = document.getElementById('eventoDia')?.value;
+  const type        = document.getElementById('eventoTipo')?.value;
+  const description = document.getElementById('eventoDescripcion')?.value.trim();
+  const link        = document.getElementById('eventoLink')?.value.trim();
+  const image       = document.getElementById('eventoPreviewImg')?.src || '';
+  const hasImage    = !document.getElementById('eventoImagePreview').classList.contains('hidden') && image;
+
+  if (!text) { showToast('Escribí un título para el evento', 'error'); return; }
+  if (link && !link.match(/^https?:\/\//i)) { showToast('El enlace debe empezar por https:// o http://', 'error'); return; }
+
+  const events = getPlannerEvents();
+
+  if (editingEventoId) {
+    const idx = events.findIndex(e => e.id === editingEventoId);
+    if (idx !== -1) {
+      events[idx] = { ...events[idx], text, day, type, description: description || null, link: link || null, image: hasImage ? image : null };
+    }
+  } else {
+    events.push({ id: 'evt-' + Date.now(), text, day, type, description: description || null, link: link || null, image: hasImage ? image : null });
+  }
+
+  savePlannerEvents(events);
+  editingEventoId = null;
+  closePanel('panelEventoForm');
+  showToast('📅 Evento guardado', 'success');
+  renderPlanner();
+  renderAdminPlanner();
+});
+
+window.deleteEvento = function(eventoId) {
+  if (!confirm('¿Eliminar este evento del planificador?')) return;
+  savePlannerEvents(getPlannerEvents().filter(e => e.id !== eventoId));
+  showToast('Evento eliminado', 'info');
+  closePanel('panelEventoDetail');
+  renderPlanner();
+  renderAdminPlanner();
+};
+
+function renderAdminPlanner() {
+  const list = document.getElementById('adminPlannerList');
+  if (!list) return;
+  const events = getPlannerEvents();
+  if (events.length === 0) {
+    list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:20px">Todavía no hay eventos en el planificador.</p>';
+    return;
+  }
+  const sorted = [...events].sort((a, b) => days.indexOf(a.day) - days.indexOf(b.day));
+  list.innerHTML = sorted.map(e => {
+    const meta = PLANNER_TYPES[e.type] || PLANNER_TYPES.rutina;
+    return `
+    <div class="admin-user-row">
+      <div class="admin-user-info">
+        <strong>${escapeHtml(e.text)}</strong>
+        <span>${escapeHtml(e.day)} · ${meta.emoji} ${meta.label}${e.image ? ' · 📷 con foto' : ''}${e.link ? ' · 🔗 con enlace' : ''}</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-micro" onclick="openEventoForm('${e.id}')">✏️ Editar</button>
+        <button class="btn-micro" style="color:var(--red)" onclick="deleteEvento('${e.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
 
 // =============================================
 // CALCULADORA DE DERECHOS
