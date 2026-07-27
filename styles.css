@@ -777,6 +777,12 @@ section { padding: 90px 0; }
 .calc-result-item { background: var(--blue-pale); border: 1px solid rgba(110,155,201,0.2); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; }
 .calc-result-item h4 { font-size: 0.95rem; font-weight: 700; color: var(--green); margin-bottom: 6px; }
 .calc-result-item p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
+.calc-disclaimer {
+  margin-top: 18px; padding: 14px 16px; border-radius: var(--radius-sm);
+  background: var(--gold-pale); border: 1px solid rgba(221,181,124,0.5);
+  font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;
+}
+.calc-disclaimer strong { color: var(--text-primary); }
 
 /* CHAT */
 .chat-box { height: 260px; background: var(--bg-section); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }

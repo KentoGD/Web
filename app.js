@@ -2001,36 +2001,111 @@ document.getElementById('panelDerechosOverlay')?.addEventListener('click',() => 
 window.calcNextStep = function(step) {
   document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
   document.querySelector(`.calc-step[data-step="${step}"]`)?.classList.remove('hidden');
+  // El resultado no es un .calc-step, así que hay que ocultarlo aparte: si no,
+  // al pulsar "Recalcular" el listado anterior seguía visible bajo el paso 1.
+  document.getElementById('calcResult')?.classList.add('hidden');
 };
+
+// Último cálculo, para poder descargar el informe
+let _ultimoCalculoDerechos = null;
 
 window.calcularPrestaciones = function() {
   const disc = document.getElementById('calcDiscapacidad').value;
   const dep  = document.getElementById('calcDependencia').value;
   const lab  = document.getElementById('calcLaboral').value;
+  const edad = parseInt(document.getElementById('calcEdad').value, 10);
   const results = [];
+
   if (disc !== 'none') {
-    results.push({ title:'💵 Deducción IRPF por hijo con discapacidad', desc:'Hasta 1.200€/año o 100€/mes anticipado.' });
-    results.push({ title:'🚌 Tarjeta de estacionamiento y transporte adaptado', desc:'Reserva de plaza y descuento en transporte público.' });
+    results.push({ title:'💵 Deducción IRPF por descendiente con discapacidad', desc:'Hasta 1.200 €/año, que se puede cobrar de forma anticipada a 100 €/mes.' });
+    results.push({ title:'🚌 Tarjeta de estacionamiento y transporte adaptado', desc:'Reserva de plaza y descuentos en transporte público. La tarjeta de estacionamiento requiere baremo de movilidad reducida.' });
   }
+  if (disc === '65-74' || disc === '75+') {
+    results.push({ title:'👶 Asignación por hijo a cargo con discapacidad', desc:'Prestación de la Seguridad Social, sin límite de ingresos cuando la discapacidad es del 65% o superior.' });
+  }
+  if (disc === '75+') {
+    results.push({ title:'🤝 Complemento de tercera persona', desc:'Complemento adicional cuando se acredita la necesidad de ayuda de otra persona para las actividades básicas.' });
+  }
+
   if (dep === 'g2' || dep === 'g3') {
-    results.push({ title:'💶 Prestación PECEF', desc:'Entre 300€ y 715€/mes para el cuidador/a del entorno familiar.' });
-    results.push({ title:'🛡️ Convenio Especial SS Cuidadores', desc:'La Seguridad Social cotiza por ti sin coste.' });
+    results.push({ title:'💶 Prestación económica por cuidados en el entorno familiar (PECEF)', desc:'Cuantía mensual para el cuidador/a no profesional. El importe depende del grado y de la capacidad económica.' });
+    results.push({ title:'🛡️ Convenio especial de cuidadores no profesionales', desc:'La Seguridad Social asume la cotización del cuidador/a sin coste para la familia.' });
   } else if (dep === 'g1') {
-    results.push({ title:'🏡 Servicio de Ayuda a Domicilio (SAD)', desc:'Horas mensuales de apoyo profesional en el hogar.' });
+    results.push({ title:'🏡 Servicio de Ayuda a Domicilio (SAD)', desc:'Horas mensuales de apoyo profesional en el hogar, según el Programa Individual de Atención.' });
   }
-  if (lab === 'empleado') results.push({ title:'⏱️ Reducción de jornada CUMME', desc:'Reducción hasta el 99% de la jornada manteniendo el 100% de la base reguladora.' });
-  if (results.length === 0) results.push({ title:'ℹ️ Orientación inicial', desc:'Solicita valoración de discapacidad en el Centro Base de tu localidad.' });
+
+  // La edad del menor sí condiciona varios recursos
+  if (!isNaN(edad)) {
+    if (edad < 6) {
+      results.push({ title:'🧩 Atención Temprana', desc:`Con ${edad} años entra en la franja de 0 a 6: valoración y tratamiento gratuito en un CDIAT (logopedia, fisioterapia, estimulación).` });
+    }
+    if (edad >= 3 && edad <= 18) {
+      results.push({ title:'🎓 Becas y ayudas para alumnado con necesidad específica de apoyo educativo', desc:'Convocatoria anual del Ministerio de Educación: transporte, comedor, material y reeducación pedagógica o del lenguaje.' });
+      results.push({ title:'🏫 Apoyos escolares (PT y AL)', desc:'Dictamen de escolarización y apoyo de Pedagogía Terapéutica y Audición y Lenguaje en el centro educativo.' });
+    }
+    if (edad > 18) {
+      results.push({ title:'⚠️ Revisión al cumplir la mayoría de edad', desc:'A partir de los 18 conviene revisar la incapacitación/apoyos a la capacidad jurídica y las prestaciones de adultos.' });
+    }
+  }
+
+  if (lab === 'empleado') {
+    results.push({ title:'⏱️ Reducción de jornada por cuidado de menor', desc:'Reducción de jornada con disminución proporcional del salario, y excedencia por cuidado de familiares con reserva del puesto.' });
+  } else if (lab === 'autonomo') {
+    results.push({ title:'🧾 Bonificación en la cuota de autónomos por conciliación', desc:'Bonificación de la cuota durante el cuidado de menores a cargo, cumpliendo los requisitos de contratación y alta.' });
+  } else if (lab === 'excedencia') {
+    results.push({ title:'📈 Cotización durante la excedencia por cuidado', desc:'Los primeros años de excedencia por cuidado de un menor se consideran cotizados de forma efectiva.' });
+  } else if (lab === 'desempleo') {
+    results.push({ title:'💠 Ingreso Mínimo Vital y rentas autonómicas', desc:'Revisa el IMV y la renta mínima de tu comunidad: la discapacidad en la unidad de convivencia incrementa la cuantía.' });
+  }
+
+  if (results.length === 0) {
+    results.push({ title:'ℹ️ Orientación inicial', desc:'Solicita la valoración de discapacidad en el Centro Base de tu localidad: es la puerta de entrada al resto de ayudas.' });
+  }
+
+  _ultimoCalculoDerechos = { results, disc, dep, lab, edad, fecha: new Date().toLocaleDateString('es-ES') };
 
   const resDiv = document.getElementById('calcResult');
   resDiv.innerHTML = `
-    <h3 style="color:var(--purple-light);margin-bottom:16px">Ayudas Estimadas (${results.length})</h3>
-    ${results.map(r => `<div class="calc-result-item"><h4>${r.title}</h4><p>${r.desc}</p></div>`).join('')}
-    <div style="margin-top:20px;display:flex;gap:10px">
+    <h3 style="color:var(--blue-dark);margin-bottom:16px">Ayudas orientativas (${results.length})</h3>
+    ${results.map(r => `<div class="calc-result-item"><h4>${escapeHtml(r.title)}</h4><p>${escapeHtml(r.desc)}</p></div>`).join('')}
+    <p class="calc-disclaimer">⚠️ Este listado es <strong>orientativo</strong> y no sustituye a una valoración oficial. Las cuantías y requisitos cambian según la comunidad autónoma y la situación económica de la familia. Confírmalo en los servicios sociales de tu ayuntamiento o en el Centro Base.</p>
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="calcNextStep(1)">🔄 Recalcular</button>
-      <button class="btn-primary" style="flex:1" onclick="showToast('Descargando informe PDF...','success')">📥 Descargar PDF</button>
+      <button class="btn-primary" style="flex:1" onclick="descargarInformeDerechos()">📥 Descargar informe</button>
     </div>`;
   document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
   resDiv.classList.remove('hidden');
+};
+
+// Genera y descarga de verdad un informe con el resultado (antes el botón solo
+// mostraba un aviso de "Descargando..." pero no descargaba ningún archivo).
+window.descargarInformeDerechos = function() {
+  if (!_ultimoCalculoDerechos) return;
+  const { results, edad, fecha } = _ultimoCalculoDerechos;
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Informe de derechos y ayudas — NANA</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 24px;color:#274864;line-height:1.6}
+ h1{color:#2B4E6B} h2{font-size:1rem;margin:0 0 4px}
+ .item{background:#EDF3FA;border-left:4px solid #62B8B0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+ .item p{margin:0;font-size:0.92rem;color:#5A7290}
+ .nota{background:#FBF3E7;border:1px solid #DDB57C;border-radius:10px;padding:14px;font-size:0.88rem;margin-top:24px}
+ @media print{ body{margin:0} }
+</style></head><body>
+<h1>Informe de derechos y ayudas</h1>
+<p><strong>NANA</strong> — Núcleo de Acompañamiento y Necesidades del Autismo<br>
+Fecha: ${fecha}${!isNaN(edad) ? ` · Edad del menor: ${edad} años` : ''}</p>
+${results.map(r => `<div class="item"><h2>${escapeHtml(r.title)}</h2><p>${escapeHtml(r.desc)}</p></div>`).join('')}
+<div class="nota">⚠️ Listado <strong>orientativo</strong>. No sustituye a una valoración oficial: las cuantías y requisitos cambian según la comunidad autónoma y la situación económica. Confírmalo en los servicios sociales de tu ayuntamiento o en el Centro Base.</div>
+<p style="margin-top:20px;font-size:0.85rem;color:#93A6BE">Para guardarlo como PDF, abre este archivo e imprime eligiendo "Guardar como PDF".</p>
+</body></html>`;
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `informe-derechos-NANA-${new Date().toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('📥 Informe descargado. Ábrelo e imprime como PDF si lo necesitas.', 'success', 5000);
 };
 
 // =============================================
