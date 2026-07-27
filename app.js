@@ -444,7 +444,7 @@ function renderMyTrayectoria() {
 
     ${risk.level === 'grave' ? `
       <div class="risk-alert-banner">
-        <strong>💜 No estás solo/a.</strong> Detectamos varios días difíciles seguidos y tu caso quedó marcado como prioritario para nuestro equipo. Podés escribirnos ahora mismo.
+        <strong>💙 No estás solo/a.</strong> Detectamos varios días difíciles seguidos y tu caso quedó marcado como prioritario para nuestro equipo. Podés escribirnos ahora mismo.
         <button class="btn-primary sm" onclick="openPanel('panelMensajes')">Contactar con apoyo →</button>
       </div>` : ''}
 
@@ -529,7 +529,7 @@ const SAMPLE_POSTS = [
     content: 'Hoy hemos tenido la reunión trimestral con orientación escolar. Han adaptado los materiales y nuestro Mateo está súper motivado.',
     childMood: '😄 Muy bien', caregiverMood: '🙂 Bien', energy: '8/10', likes: 24, userLiked: false,
     comments: [
-      { author: 'Ana R. (Madre)', date: 'Ayer, 19:40', text: '¡Qué gran noticia! Da tranquilidad cuando el colegio se involucra de verdad. ❤️' }
+      { author: 'Ana R. (Madre)', date: 'Ayer, 19:40', text: '¡Qué gran noticia! Da tranquilidad cuando el colegio se involucra de verdad. 💙' }
     ]
   },
   {
@@ -627,7 +627,7 @@ function renderForum() {
         </div>
       </div>
       <div class="forum-footer">
-        <button class="btn-like ${p.userLiked ? 'liked' : ''}" onclick="toggleLike('${p.id}')">❤️ <span>${p.likes} Apoyos</span></button>
+        <button class="btn-like ${p.userLiked ? 'liked' : ''}" onclick="toggleLike('${p.id}')">💙 <span>${p.likes} Apoyos</span></button>
         <div class="forum-actions">
           <span class="forum-comments-count">💬 ${p.comments.length} respuestas</span>
           <button class="btn-micro" onclick="openPostDetail('${p.id}')">Ver y Responder →</button>
@@ -826,7 +826,7 @@ window.submitReply = function(postId) {
       link:  link  || undefined
     });
     savePosts(posts);
-    showToast('❤️ Respuesta publicada', 'success');
+    showToast('💙 Respuesta publicada', 'success');
     openPostDetail(postId);
     renderForum();
     renderFeaturedFamilyWidget();
@@ -1057,7 +1057,7 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   flagRiskCase(cu, risk.level);
 
   if (risk.level === 'grave') {
-    showToast('💜 Detectamos varios días difíciles seguidos. Tu caso quedó marcado como prioritario para que nuestro equipo te contacte.', 'error', 7000);
+    showToast('💙 Detectamos varios días difíciles seguidos. Tu caso quedó marcado como prioritario para que nuestro equipo te contacte.', 'error', 7000);
   } else {
     showToast('💾 Situación guardada en privado' + (wantsPublish ? ' y publicada en el Foro' : ''), 'success');
   }
@@ -1156,7 +1156,7 @@ function renderAdminPosts() {
     <div class="admin-user-row">
       <div class="admin-user-info">
         <strong>${escapeHtml(p.title)}</strong>
-        <span>Por: ${escapeHtml(p.author)} · ${escapeHtml(p.date)} · ❤️ ${p.likes} apoyos</span>
+        <span>Por: ${escapeHtml(p.author)} · ${escapeHtml(p.date)} · 💙 ${p.likes} apoyos</span>
       </div>
       <button class="btn-micro" style="color:var(--red)" onclick="deletePost('${p.id}')">🗑️ Eliminar</button>
     </div>
@@ -1203,7 +1203,7 @@ function renderAdminPortada() {
       <div class="admin-user-row" style="${isPinned ? 'border:2px solid var(--gold);background:var(--gold-pale);' : ''}">
         <div class="admin-user-info">
           <strong>${escapeHtml(p.title)} ${isPinned ? '<span class="ffw-pinned-tag">📌 EN PORTADA</span>' : ''}</strong>
-          <span>Por: ${escapeHtml(p.author)} · ❤️ ${p.likes} apoyos · ${p.comments.length} respuestas</span>
+          <span>Por: ${escapeHtml(p.author)} · 💙 ${p.likes} apoyos · ${p.comments.length} respuestas</span>
         </div>
         <div style="display:flex;gap:6px;">
           ${isPinned
@@ -1252,7 +1252,7 @@ function renderFeaturedFamilyWidget() {
       <span class="ffw-stat">${escapeHtml(featured.catLabel)}</span>
       <span class="ffw-stat">💬 ${featured.comments.length} respuestas</span>
     </div>
-    <div class="ffw-likes">❤️ ${featured.likes} familias dan su apoyo</div>
+    <div class="ffw-likes">💙 ${featured.likes} familias dan su apoyo</div>
   `;
 
   if (ctaBtn) {
@@ -2013,4 +2013,4 @@ renderFeaturedFamilyWidget();
 renderMyTrayectoria();
 
 setTimeout(() => showToast('👋 Bienvenido/a a CuidApp. Tienes 3 alertas pendientes.', 'info', 5000), 1500);
-console.log('%c💜 CuidApp cargado correctamente', 'color:#0072BB;font-size:14px;font-weight:bold;');
+console.log('%c💙 CuidApp cargado correctamente', 'color:#6E9BC9;font-size:14px;font-weight:bold;');
