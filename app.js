@@ -23,27 +23,6 @@ const navLinks  = document.getElementById('navLinks');
 // Sections available as pages
 const PAGE_IDS = ['dashboard','situacion','herramientas','foro','noticias','recursos','alertas','infografia'];
 
-// Inject a lightweight footer into every section on first show
-const FOOTER_HTML = `
-<footer class="page-footer">
-  <div class="footer-bottom">
-    <span>💜 CuidApp 2026 — Portal de Cuidadores · <a href="#" onclick="navigateTo('dashboard');return false" style="color:var(--gold);text-decoration:none">Volver al inicio</a></span>
-    <nav class="footer-nav">
-      <a href="#" onclick="navigateTo('herramientas');return false">Herramientas</a>
-      <a href="#" onclick="navigateTo('foro');return false">Foro</a>
-      <a href="#" onclick="navigateTo('noticias');return false">Noticias</a>
-      <a href="#" onclick="navigateTo('recursos');return false">Recursos</a>
-      <a href="#" onclick="navigateTo('alertas');return false">Alertas</a>
-    </nav>
-  </div>
-</footer>`;
-
-function injectFooter(section) {
-  if (!section.querySelector('.page-footer')) {
-    section.insertAdjacentHTML('beforeend', FOOTER_HTML);
-  }
-}
-
 // Navigate to a page by section ID
 window.navigateTo = function(pageId) {
   // Default to dashboard if unknown
@@ -54,12 +33,7 @@ window.navigateTo = function(pageId) {
 
   // Show target section
   const target = document.getElementById(pageId);
-  if (target) {
-    target.classList.add('active');
-    // El hero ya centra su contenido con justify-content:center; el footer
-    // inyectado usa margin-top:auto y anularía ese centrado.
-    if (pageId !== 'dashboard') injectFooter(target);
-  }
+  if (target) target.classList.add('active');
 
   // Update active nav link
   document.querySelectorAll('.nav-link').forEach(link => {

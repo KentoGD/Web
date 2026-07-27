@@ -83,27 +83,6 @@ body {
 /* so the footer is always pushed to the bottom */
 .page-inner { flex: 1; }
 
-/* Page-level footer (shared, cloned into each page) */
-.page-footer {
-  background: var(--blue-dark);
-  border-top: 3px solid var(--gold);
-  padding: 32px 0;
-  margin-top: auto;
-}
-.page-footer .footer-bottom {
-  max-width: 1200px; margin: 0 auto; padding: 0 24px;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 12px;
-  font-size: 0.8rem; color: rgba(255,255,255,0.6);
-}
-.page-footer .footer-nav {
-  display: flex; gap: 16px; flex-wrap: wrap;
-}
-.page-footer .footer-nav a {
-  color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.8rem;
-  transition: var(--transition);
-}
-.page-footer .footer-nav a:hover { color: var(--gold); }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
