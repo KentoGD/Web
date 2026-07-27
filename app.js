@@ -272,6 +272,7 @@ window.logoutUser = function() {
 // post del foro), para poder ver su evolución y detectar patrones de
 // riesgo que requieran contacto proactivo del equipo de apoyo.
 const MOOD_SEVERITY = { 'muy-bien': 0, 'bien': 1, 'regular': 2, 'mal': 3, 'muy-mal': 4 };
+const MOOD_EMOJI = { 'muy-bien': '😄', 'bien': '🙂', 'regular': '😐', 'mal': '😟', 'muy-mal': '😢' };
 
 let _situacionLogCache = null;
 function getSituacionLog() {
@@ -387,10 +388,8 @@ function renderMyTrayectoria() {
   };
   const [riskText, riskClass] = RISK_LABELS[risk.level];
 
-  // Colorea la barra según el ánimo del cuidador de ese día (no solo la
-  // altura por energía), para leer de un vistazo ánimo + agotamiento juntos.
-  const MOOD_BAR_COLOR = { 0: 'var(--green)', 1: 'var(--green)', 2: 'var(--gold)', 3: 'var(--red)', 4: 'var(--red)' };
   const chartRecords = [...allRecords].reverse().slice(-14); // orden cronológico para el gráfico
+  const energyColor = (e) => (e >= 7 ? 'var(--green)' : e >= 4 ? 'var(--gold)' : 'var(--red)');
 
   const last = allRecords[0];
   const avgEnergy = (allRecords.slice(0, 7).reduce((sum, r) => sum + r.energy, 0) / Math.min(7, allRecords.length)).toFixed(1);
@@ -419,21 +418,26 @@ function renderMyTrayectoria() {
       </div>
     </div>
 
-    <div class="trayectoria-bars">
-      ${chartRecords.map(r => `
-        <div class="tray-bar-col" title="${escapeHtml(r.childMood)} · ${escapeHtml(r.caregiverMood)} · Energía ${r.energy}/10">
-          <div class="tray-bar" style="height:${r.energy * 10}%;background:${MOOD_BAR_COLOR[MOOD_SEVERITY[r.caregiverMoodVal] ?? 2]}"></div>
-          <span class="tray-bar-label">${new Date(r.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>
-        </div>
-      `).join('')}
+    <div class="tray-swimlane-wrap">
+      <div class="tray-swimlane" style="grid-template-columns: 96px repeat(${chartRecords.length}, minmax(38px, 1fr));">
+        <span class="tray-lane-label">👶 Niño/a</span>
+        ${chartRecords.map(r => `<span class="tray-lane-cell" title="Niño/a: ${escapeHtml(r.childMood)}">${MOOD_EMOJI[r.childMoodVal] ?? '🙂'}</span>`).join('')}
+
+        <span class="tray-lane-label">🧠 Cuidador/a</span>
+        ${chartRecords.map(r => `<span class="tray-lane-cell" title="Cuidador/a: ${escapeHtml(r.caregiverMood)}">${MOOD_EMOJI[r.caregiverMoodVal] ?? '😐'}</span>`).join('')}
+
+        <span class="tray-lane-label">⚡ Energía</span>
+        ${chartRecords.map(r => `
+          <span class="tray-lane-energy" title="Energía: ${r.energy}/10">
+            <span class="tray-lane-energy-fill" style="height:${r.energy * 10}%;background:${energyColor(r.energy)}"></span>
+          </span>
+        `).join('')}
+
+        <span class="tray-lane-label"></span>
+        ${chartRecords.map(r => `<span class="tray-lane-date">${new Date(r.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>`).join('')}
+      </div>
     </div>
-    <div class="tray-legend">
-      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--green)"></span>Bien</span>
-      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--gold)"></span>Regular</span>
-      <span class="tray-legend-item"><span class="tray-legend-dot" style="background:var(--red)"></span>Difícil</span>
-      <span class="tray-legend-sep">·</span>
-      <span>altura = energía del día</span>
-    </div>
+    <p class="tray-legend">👶 y 🧠 muestran el ánimo del día · la barra de energía es verde (alta), amarilla (media) o roja (baja)</p>
 
     ${risk.level === 'grave' ? `
       <div class="risk-alert-banner">
