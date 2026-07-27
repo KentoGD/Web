@@ -4,15 +4,15 @@
 
 :root {
   /* Paleta suave — azul empolvado / lavanda */
-  --blue:         #6E9BC9;
-  --blue-dark:    #2C3E5D;
+  --blue:         #4E86AB;
+  --blue-dark:    #2B4E6B;
   --blue-light:   #A9C5E2;
   --blue-pale:    #EDF3FA;
   --gold:         #DDB57C;
   --gold-light:   #F0D3A5;
   --gold-pale:    #FBF3E7;
-  --teal:         #7FB3B0;
-  --teal-light:   #A9CFCC;
+  --teal:         #62B8B0;
+  --teal-light:   #8FCFC9;
   --teal-pale:    #E9F4F3;
   --red:          #D4818F;
   --red-pale:     #FAEBEE;
@@ -29,7 +29,7 @@
   --bg-section:   #DCE7F3;
 
   /* Text */
-  --text-primary:   #2C3E5D;
+  --text-primary:   #274864;
   --text-secondary: #5A7290;
   --text-muted:     #93A6BE;
 
@@ -124,8 +124,10 @@ body::after  { right: 0; background-image: url('botanical-right.svg'); }
   max-width: 1200px; margin: 0 auto; padding: 0 24px;
   display: flex; align-items: center; gap: 24px; height: 68px;
 }
-.nav-brand { display: flex; align-items: center; gap: 8px; font-size: 1.3rem; font-weight: 800; white-space: nowrap; color: var(--blue-dark); }
+.nav-brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 800; letter-spacing: 1.5px; white-space: nowrap; color: var(--blue-dark); }
 .brand-icon { font-size: 1.4rem; animation: pulse-icon 2.5s ease-in-out infinite; }
+.brand-logo { height: 40px; width: auto; display: block; flex-shrink: 0; }
+.footer-logo { height: 52px; margin-bottom: 4px; }
 @keyframes pulse-icon { 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
 
 .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; flex: 1; justify-content: center; }
@@ -908,8 +910,9 @@ section { padding: 90px 0; }
   display: grid; grid-template-columns: 1.5fr repeat(3,1fr); gap: 40px;
 }
 .footer-brand { display: flex; flex-direction: column; gap: 12px; }
-.footer-brand .brand-text { font-size: 1.2rem; color: white; }
-.footer-brand p { font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+.footer-brand .brand-text { font-size: 1.5rem; letter-spacing: 1.5px; font-weight: 800; color: white; font-family: 'Baloo 2', 'Quicksand', sans-serif; }
+.footer-brand p { font-size: 0.8rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
+.footer-brand em { color: rgba(255,255,255,0.5); font-style: italic; }
 .footer-col { display: flex; flex-direction: column; gap: 10px; }
 .footer-col h4 { font-size: 0.88rem; font-weight: 700; color: var(--blue-light); margin-bottom: 4px; }
 .footer-col a { text-decoration: none; color: rgba(255,255,255,0.6); font-size: 0.85rem; transition: var(--transition); }

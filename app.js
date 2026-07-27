@@ -156,7 +156,7 @@ document.addEventListener('keydown', (e) => {
 // USUARIOS Y AUTENTICACIÓN
 // =============================================
 const DEFAULT_USERS = [
-  { id: 'u-admin', email: 'admin@cuidapp.es', pass: 'admin123', name: 'Administrador CuidApp', role: 'admin', banned: false },
+  { id: 'u-admin', email: 'admin@cuidapp.es', pass: 'admin123', name: 'Administrador NANA', role: 'admin', banned: false },
   { id: 'u-1', email: 'maria@ejemplo.com', pass: '123456', name: 'María G.', role: 'padre', banned: false },
   { id: 'u-2', email: 'javier@ejemplo.com', pass: '123456', name: 'Javier P.', role: 'padre', banned: false },
   { id: 'u-3', email: 'elena@ejemplo.com', pass: '123456', name: 'Dra. Elena', role: 'profesional', banned: false }
@@ -2012,5 +2012,5 @@ renderForum();
 renderFeaturedFamilyWidget();
 renderMyTrayectoria();
 
-setTimeout(() => showToast('👋 Bienvenido/a a CuidApp. Tienes 3 alertas pendientes.', 'info', 5000), 1500);
-console.log('%c💙 CuidApp cargado correctamente', 'color:#6E9BC9;font-size:14px;font-weight:bold;');
+setTimeout(() => showToast('👋 Bienvenido/a a NANA. Tienes 3 alertas pendientes.', 'info', 5000), 1500);
+console.log('%c💙 NANA cargado correctamente', 'color:#6E9BC9;font-size:14px;font-weight:bold;');
