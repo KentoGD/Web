@@ -332,14 +332,52 @@
     </div>
   </div>
 
-  <!-- PLANIFICADOR MODAL -->
+  <!-- PLANIFICADOR / CALENDARIO MODAL -->
   <div class="tool-panel" id="panelPlanificador">
     <div class="panel-overlay" id="panelPlanOverlay"></div>
-    <div class="panel-content" style="max-width:980px;">
+    <div class="panel-content planner-modal-content">
       <button class="panel-close" id="panelPlanClose">✕</button>
-      <h2 class="panel-title">📅 Planificador Semanal</h2>
-      <p class="panel-sub">Tocá un evento para ver el detalle. El equipo lo mantiene actualizado desde Moderación.</p>
-      <div class="planner-grid" id="plannerGrid"></div>
+
+      <div class="planner-header">
+        <div>
+          <h2 class="panel-title" style="margin-bottom:4px;">📅 Agenda y Calendario de Cuidados</h2>
+          <p class="panel-sub" style="margin-bottom:0;">Organizá tus citas, terapias y rutinas. Podés cambiar entre vista semanal (Lun-Dom) o mensual y apuntar todos tus eventos.</p>
+        </div>
+        <button class="btn-primary sm" onclick="openEventoForm()" style="white-space:nowrap;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:1.1rem">➕</span> Añadir Cita / Evento
+        </button>
+      </div>
+
+      <!-- CONTROLES DEL CALENDARIO -->
+      <div class="planner-controls-bar">
+        <div class="planner-view-toggle">
+          <button class="planner-toggle-btn active" id="btnViewWeek" onclick="setPlannerViewMode('week')">📅 Vista Semanal</button>
+          <button class="planner-toggle-btn" id="btnViewMonth" onclick="setPlannerViewMode('month')">🗓️ Vista Mensual</button>
+        </div>
+
+        <div class="planner-nav-group">
+          <button class="btn-secondary sm" onclick="navigatePlannerDate(-1)">◀ Anterior</button>
+          <span class="planner-date-title" id="plannerDateTitle">Cargando...</span>
+          <button class="btn-secondary sm" onclick="navigatePlannerDate(1)">Siguiente ▶</button>
+          <button class="btn-secondary sm" onclick="resetPlannerDateToToday()">Hoy</button>
+        </div>
+
+        <div class="planner-filter-group">
+          <select class="planner-select sm" id="plannerFilterType" onchange="setPlannerFilter(this.value)">
+            <option value="all">🔍 Todos los tipos</option>
+            <option value="terapia">🏥 Terapia</option>
+            <option value="medico">💊 Médico</option>
+            <option value="rutina">🌅 Rutina</option>
+            <option value="ocio">🎮 Ocio</option>
+            <option value="descanso">😴 Descanso</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR VISTA CALENDARIO -->
+      <div class="planner-calendar-wrap" id="plannerCalendarWrap">
+        <div class="planner-grid" id="plannerGrid"></div>
+      </div>
     </div>
   </div>
 
@@ -670,16 +708,20 @@
           <input type="text" class="planner-input full-w" id="eventoTitulo" placeholder="Ej. Fisioterapia" />
         </div>
         <div class="reg-group">
-          <label class="reg-label">Día</label>
-          <select class="planner-select full-w" id="eventoDia">
-            <option value="Lun">Lunes</option>
-            <option value="Mar">Martes</option>
-            <option value="Mié">Miércoles</option>
-            <option value="Jue">Jueves</option>
-            <option value="Vie">Viernes</option>
-            <option value="Sáb">Sábado</option>
-            <option value="Dom">Domingo</option>
-          </select>
+          <label class="reg-label">Día recurrente o Fecha específica</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select class="planner-select" id="eventoDia" style="flex:1;min-width:140px;">
+              <option value="Lun">Lunes (Semanal)</option>
+              <option value="Mar">Martes (Semanal)</option>
+              <option value="Mié">Miércoles (Semanal)</option>
+              <option value="Jue">Jueves (Semanal)</option>
+              <option value="Vie">Viernes (Semanal)</option>
+              <option value="Sáb">Sábado (Semanal)</option>
+              <option value="Dom">Domingo (Semanal)</option>
+            </select>
+            <input type="date" class="planner-input" id="eventoFecha" style="flex:1;min-width:140px;" />
+          </div>
+          <span style="font-size:0.75rem;color:var(--text-muted);">Elegí una fecha concreta para un evento único, o el día de la semana para que se repita todas las semanas.</span>
         </div>
         <div class="reg-group">
           <label class="reg-label">Tipo</label>

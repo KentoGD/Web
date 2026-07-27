@@ -1630,9 +1630,12 @@ document.getElementById('panelTestClose')?.addEventListener('click',  () => clos
 document.getElementById('panelTestOverlay')?.addEventListener('click',() => closePanel('panelTest'));
 
 // =============================================
-// PLANIFICADOR SEMANAL (localStorage, gestionable por el admin)
+// PLANIFICADOR Y CALENDARIO INTERACTIVO (localStorage)
 // =============================================
 const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const dayNamesFull = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
 const PLANNER_TYPES = {
   terapia:  { label: 'Terapia',  emoji: '🏥' },
   medico:   { label: 'Médico',   emoji: '💊' },
@@ -1642,19 +1645,25 @@ const PLANNER_TYPES = {
 };
 
 const SEED_PLANNER_EVENTS = [
-  { id: 'evt-1', day: 'Lun', text: 'Fisioterapia',      type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-2', day: 'Lun', text: 'Medicación',        type: 'medico',   description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-3', day: 'Mar', text: 'Logopedia',         type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-4', day: 'Mié', text: 'Médico',            type: 'medico',   description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-5', day: 'Mié', text: 'Juego libre',       type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-6', day: 'Jue', text: 'T. Ocupacional',    type: 'terapia',  description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-7', day: 'Vie', text: 'Rutina mañana',     type: 'rutina',   description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-8', day: 'Vie', text: 'Parque',            type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-9', day: 'Sáb', text: 'Descanso cuidador', type: 'descanso', description: null, image: null, imagePosition: 'center', link: null },
-  { id: 'evt-10', day: 'Dom', text: 'Familia',          type: 'ocio',     description: null, image: null, imagePosition: 'center', link: null }
+  { id: 'evt-1', day: 'Lun', text: 'Fisioterapia',      type: 'terapia',  description: 'Sesión de motricidad y ejercicios posturales', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-2', day: 'Lun', text: 'Medicación',        type: 'medico',   description: 'Toma diaria de la mañana', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-3', day: 'Mar', text: 'Logopedia',         type: 'terapia',  description: 'Taller de comunicación y lenguaje', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-4', day: 'Mié', text: 'Consulta Médica',   type: 'medico',   description: 'Revisión trimestral de pediatría', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-5', day: 'Mié', text: 'Juego libre',       type: 'ocio',     description: 'Actividad en espacio sensorial', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-6', day: 'Jue', text: 'T. Ocupacional',    type: 'terapia',  description: 'Integración sensorial', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-7', day: 'Vie', text: 'Rutina mañana',     type: 'rutina',   description: 'Preparación y estructuración con pictogramas', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-8', day: 'Vie', text: 'Salida al Parque',  type: 'ocio',     description: 'Paseo al aire libre', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-9', day: 'Sáb', text: 'Descanso cuidador', type: 'descanso', description: 'Tiempo de autocuidado y respiro para familias', image: null, imagePosition: 'center', link: null },
+  { id: 'evt-10', day: 'Dom', text: 'Actividad Familiar', type: 'ocio',   description: 'Reunión o paseo familiar', image: null, imagePosition: 'center', link: null }
 ];
 
 let _plannerCache = null;
+let plannerState = {
+  viewMode: 'week', // 'week' | 'month'
+  currentDate: new Date(),
+  filterType: 'all'
+};
+
 function getPlannerEvents() {
   if (_plannerCache) return _plannerCache;
   const data = localStorage.getItem('cuidapp_planner_events');
@@ -1664,71 +1673,214 @@ function getPlannerEvents() {
 }
 function savePlannerEvents(events) { _plannerCache = events; localStorage.setItem('cuidapp_planner_events', JSON.stringify(events)); }
 
+// --- Funciones de navegación del calendario ---
+window.setPlannerViewMode = function(mode) {
+  plannerState.viewMode = mode;
+  document.getElementById('btnViewWeek')?.classList.toggle('active', mode === 'week');
+  document.getElementById('btnViewMonth')?.classList.toggle('active', mode === 'month');
+  renderPlanner();
+};
+
+window.navigatePlannerDate = function(delta) {
+  const d = new Date(plannerState.currentDate);
+  if (plannerState.viewMode === 'week') {
+    d.setDate(d.getDate() + (delta * 7));
+  } else {
+    d.setMonth(d.getMonth() + delta);
+  }
+  plannerState.currentDate = d;
+  renderPlanner();
+};
+
+window.resetPlannerDateToToday = function() {
+  plannerState.currentDate = new Date();
+  renderPlanner();
+};
+
+window.setPlannerFilter = function(type) {
+  plannerState.filterType = type;
+  renderPlanner();
+};
+
+// --- Renderizado del Calendario ---
 function renderPlanner() {
-  const grid = document.getElementById('plannerGrid');
-  if (!grid) return;
-  const events = getPlannerEvents();
-  grid.innerHTML = days.map(day => `
-    <div class="planner-day-col" data-day="${day}">
-      <div class="planner-day-header">${day}</div>
-      ${events.filter(e => e.day === day).map(e => e.image ? `
-        <div class="planner-task-photo" onclick="openEventoDetail('${e.id}')" title="${escapeHtml(e.text)}">
-          <div class="planner-task-photo-label ${escapeHtml(e.type)}">${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}</div>
-          <img src="${escapeHtml(e.image)}" alt="" style="object-position:${escapeHtml(e.imagePosition || 'center')}" />
+  const container = document.getElementById('plannerGrid');
+  const dateTitle = document.getElementById('plannerDateTitle');
+  if (!container) return;
+
+  const events = getPlannerEvents().filter(e => plannerState.filterType === 'all' || e.type === plannerState.filterType);
+  const now = new Date();
+
+  if (plannerState.viewMode === 'week') {
+    // Calculamos el Lunes de la semana seleccionada
+    const curr = new Date(plannerState.currentDate);
+    const dayOfWeek = (curr.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+    const monday = new Date(curr);
+    monday.setDate(curr.getDate() - dayOfWeek);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    if (dateTitle) {
+      dateTitle.textContent = `Semana ${monday.getDate()} ${monthNames[monday.getMonth()].substring(0,3)} - ${sunday.getDate()} ${monthNames[sunday.getMonth()].substring(0,3)} ${sunday.getFullYear()}`;
+    }
+
+    // Renderizado de las 7 columnas (Lunes a Domingo)
+    let colsHtml = '';
+    for (let i = 0; i < 7; i++) {
+      const colDate = new Date(monday);
+      colDate.setDate(monday.getDate() + i);
+      const dayCode = days[i];
+      const dateStr = `${colDate.getFullYear()}-${String(colDate.getMonth()+1).padStart(2,'0')}-${String(colDate.getDate()).padStart(2,'0')}`;
+      const isToday = (colDate.toDateString() === now.toDateString());
+
+      const dayEvts = events.filter(e => e.date === dateStr || (!e.date && e.day === dayCode));
+
+      colsHtml += `
+        <div class="planner-day-col ${isToday ? 'is-today' : ''}" data-day="${dayCode}">
+          <div class="planner-day-header">
+            <div>${dayCode} ${colDate.getDate()}/${colDate.getMonth()+1}</div>
+            ${isToday ? '<span style="font-size:0.6rem;background:white;color:var(--blue);padding:1px 4px;border-radius:4px;display:inline-block;margin-top:2px;font-weight:800;">HOY</span>' : ''}
+          </div>
+          ${dayEvts.map(e => e.image ? `
+            <div class="planner-task-photo" onclick="openEventoDetail('${e.id}')" title="${escapeHtml(e.text)}">
+              <div class="planner-task-photo-label ${escapeHtml(e.type)}">${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}</div>
+              <img src="${escapeHtml(e.image)}" alt="" style="object-position:${escapeHtml(e.imagePosition || 'center')}" />
+            </div>
+          ` : `
+            <div class="planner-task ${escapeHtml(e.type)}" title="${escapeHtml(e.text)}" onclick="openEventoDetail('${e.id}')">
+              ${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}
+            </div>
+          `).join('')}
+          <button class="btn-secondary sm" style="margin-top:auto;font-size:0.72rem;padding:4px;text-align:center;border-style:dashed;" onclick="openEventoForm(null, '${dateStr}')">＋ Añadir</button>
         </div>
-      ` : `
-        <div class="planner-task ${escapeHtml(e.type)}" title="${escapeHtml(e.text)}" onclick="openEventoDetail('${e.id}')">
-          ${escapeHtml(e.text)}${e.link ? ' 🔗' : ''}
+      `;
+    }
+
+    container.className = 'planner-grid';
+    container.innerHTML = colsHtml;
+
+  } else {
+    // VISTA MENSUAL
+    const year = plannerState.currentDate.getFullYear();
+    const month = plannerState.currentDate.getMonth();
+
+    if (dateTitle) {
+      dateTitle.textContent = `${monthNames[month]} ${year}`;
+    }
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+
+    let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+    const totalDays = lastDayOfMonth.getDate();
+
+    let gridHtml = '';
+    days.forEach(d => {
+      gridHtml += `<div class="planner-month-header">${d}</div>`;
+    });
+
+    // Días previos de relleno
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      const pDay = prevMonthLastDay - i;
+      gridHtml += `
+        <div class="planner-month-cell other-month">
+          <div class="planner-cell-num">${pDay}</div>
         </div>
-      `).join('')}
-    </div>`).join('');
+      `;
+    }
+
+    // Días del mes actual
+    for (let d = 1; d <= totalDays; d++) {
+      const cellDate = new Date(year, month, d);
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayOfWeekCode = days[(cellDate.getDay() + 6) % 7];
+      const isToday = (cellDate.toDateString() === now.toDateString());
+
+      const cellEvts = events.filter(e => e.date === dateStr || (!e.date && e.day === dayOfWeekCode));
+
+      gridHtml += `
+        <div class="planner-month-cell ${isToday ? 'is-today' : ''}" onclick="openEventoForm(null, '${dateStr}')">
+          <div class="planner-cell-num">
+            <span>${d}</span>
+            ${isToday ? '<span class="today-chip">Hoy</span>' : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:2px;">
+            ${cellEvts.slice(0, 3).map(e => `
+              <div class="planner-task ${escapeHtml(e.type)}" style="font-size:0.62rem;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="event.stopPropagation();openEventoDetail('${e.id}')">
+                ${escapeHtml(e.text)}
+              </div>
+            `).join('')}
+            ${cellEvts.length > 3 ? `<span style="font-size:0.6rem;color:var(--blue);font-weight:700;">+${cellEvts.length - 3} más</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    container.className = 'planner-month-grid';
+    container.innerHTML = gridHtml;
+  }
 }
 
 document.getElementById('btnPlanificador')?.addEventListener('click', () => { renderPlanner(); openPanel('panelPlanificador'); });
 document.getElementById('panelPlanClose')?.addEventListener('click',  () => closePanel('panelPlanificador'));
 document.getElementById('panelPlanOverlay')?.addEventListener('click',() => closePanel('panelPlanificador'));
 
-// --- Ver detalle de un evento (cualquier usuario) ---
+// --- Ver detalle de un evento ---
 window.openEventoDetail = function(eventoId) {
   const evento = getPlannerEvents().find(e => e.id === eventoId);
   if (!evento) return;
-  const cu = getCurrentUser();
-  const isAdmin = !!(cu && cu.role === 'admin');
   const meta = PLANNER_TYPES[evento.type] || PLANNER_TYPES.rutina;
+  const dayText = evento.date ? `Fecha: ${evento.date}` : `Cada ${evento.day}`;
 
   document.getElementById('eventoDetailContainer').innerHTML = `
-    <span class="forum-tag">${meta.emoji} ${meta.label} · ${escapeHtml(evento.day)}</span>
+    <span class="forum-tag">${meta.emoji} ${meta.label} · ${escapeHtml(dayText)}</span>
     <h2 style="font-size:1.15rem;font-weight:800;margin:12px 0;color:var(--text-primary)">${escapeHtml(evento.text)}</h2>
     ${evento.image ? `<img src="${escapeHtml(evento.image)}" alt="" style="width:100%;border-radius:12px;margin-bottom:14px;max-height:320px;object-fit:cover;object-position:${escapeHtml(evento.imagePosition || 'center')};" />` : ''}
     ${evento.description ? `<p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">${escapeHtml(evento.description)}</p>` : ''}
     ${evento.link ? `<a href="${escapeHtml(evento.link)}" target="_blank" rel="noopener noreferrer" class="comment-link">🔗 ${escapeHtml(evento.link)}</a>` : ''}
-    ${isAdmin ? `
-      <div style="display:flex;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
-        <button class="btn-secondary sm" onclick="closePanel('panelEventoDetail');openEventoForm('${evento.id}')">✏️ Editar</button>
-        <button class="btn-secondary sm" style="color:var(--red);border-color:var(--red)" onclick="deleteEvento('${evento.id}')">🗑️ Eliminar</button>
-      </div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+      <button class="btn-secondary sm" onclick="closePanel('panelEventoDetail');openEventoForm('${evento.id}')">✏️ Editar Evento</button>
+      <button class="btn-secondary sm" style="color:var(--red);border-color:var(--red)" onclick="deleteEvento('${evento.id}')">🗑️ Eliminar</button>
+    </div>
   `;
   openPanel('panelEventoDetail');
 };
 document.getElementById('panelEventoDetailClose')?.addEventListener('click',   () => closePanel('panelEventoDetail'));
 document.getElementById('panelEventoDetailOverlay')?.addEventListener('click', () => closePanel('panelEventoDetail'));
 
-// --- Crear / editar evento (solo admin, desde Moderación o desde el detalle) ---
+// --- Crear / editar evento (Abierto para familias y cuidadores) ---
 let editingEventoId = null;
 
-window.openEventoForm = function(eventoId) {
-  const cu = getCurrentUser();
-  if (!cu || cu.role !== 'admin') return;
+window.openEventoForm = function(eventoId, prefilledDateOrDay) {
   const evento = eventoId ? getPlannerEvents().find(e => e.id === eventoId) : null;
   editingEventoId = evento ? evento.id : null;
 
-  document.getElementById('panelEventoFormTitle').textContent = evento ? '✏️ Editar Evento' : '📅 Nuevo Evento';
+  document.getElementById('panelEventoFormTitle').textContent = evento ? '✏️ Editar Evento / Cita' : '📅 Nuevo Evento o Cita';
   document.getElementById('eventoTitulo').value = evento ? evento.text : '';
-  document.getElementById('eventoDia').value = evento ? evento.day : 'Lun';
   document.getElementById('eventoTipo').value = evento ? evento.type : 'terapia';
   document.getElementById('eventoDescripcion').value = evento && evento.description ? evento.description : '';
   document.getElementById('eventoLink').value = evento && evento.link ? evento.link : '';
   document.getElementById('eventoImagePosition').value = evento && evento.imagePosition ? evento.imagePosition : 'center';
+
+  const fechaInput = document.getElementById('eventoFecha');
+  const diaInput = document.getElementById('eventoDia');
+
+  if (evento) {
+    if (fechaInput) fechaInput.value = evento.date || '';
+    if (diaInput) diaInput.value = evento.day || 'Lun';
+  } else if (prefilledDateOrDay) {
+    if (prefilledDateOrDay.includes('-')) {
+      if (fechaInput) fechaInput.value = prefilledDateOrDay;
+    } else {
+      if (diaInput) diaInput.value = prefilledDateOrDay;
+      if (fechaInput) fechaInput.value = '';
+    }
+  } else {
+    if (fechaInput) fechaInput.value = '';
+    if (diaInput) diaInput.value = 'Lun';
+  }
 
   const preview = document.getElementById('eventoImagePreview');
   const img = document.getElementById('eventoPreviewImg');
@@ -1767,10 +1919,9 @@ window.removeEventoImage = function() {
 };
 
 document.getElementById('saveEventoBtn')?.addEventListener('click', () => {
-  const cu = getCurrentUser();
-  if (!cu || cu.role !== 'admin') return;
   const text        = document.getElementById('eventoTitulo')?.value.trim();
-  const day         = document.getElementById('eventoDia')?.value;
+  const day         = document.getElementById('eventoDia')?.value || 'Lun';
+  const date        = document.getElementById('eventoFecha')?.value || null;
   const type        = document.getElementById('eventoTipo')?.value;
   const description = document.getElementById('eventoDescripcion')?.value.trim();
   const link        = document.getElementById('eventoLink')?.value.trim();
@@ -1786,16 +1937,16 @@ document.getElementById('saveEventoBtn')?.addEventListener('click', () => {
   if (editingEventoId) {
     const idx = events.findIndex(e => e.id === editingEventoId);
     if (idx !== -1) {
-      events[idx] = { ...events[idx], text, day, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition };
+      events[idx] = { ...events[idx], text, day, date, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition };
     }
   } else {
-    events.push({ id: 'evt-' + Date.now(), text, day, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition });
+    events.push({ id: 'evt-' + Date.now(), text, day, date, type, description: description || null, link: link || null, image: hasImage ? image : null, imagePosition });
   }
 
   savePlannerEvents(events);
   editingEventoId = null;
   closePanel('panelEventoForm');
-  showToast('📅 Evento guardado', 'success');
+  showToast('📅 Evento guardado en el calendario', 'success');
   renderPlanner();
   renderAdminPlanner();
 });
