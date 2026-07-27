@@ -715,6 +715,8 @@ section { padding: 90px 0; }
 .forum-controls { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; background: white; padding: 20px; border-radius: var(--radius-sm); border: 2px solid var(--border); box-shadow: var(--shadow-sm); }
 .forum-filter-wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .forum-search-wrap { width: 100%; }
+.forum-date-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+.forum-date-input { min-width: 140px; padding: 8px 10px; }
 .forum-list { display: flex; flex-direction: column; gap: 20px; }
 .forum-card {
   background: white; border: 2px solid var(--border);

@@ -493,10 +493,20 @@ function renderAdminRiesgo() {
 // =============================================
 // FORO DE SITUACIONES (localStorage)
 // =============================================
+// Timestamp real para poder filtrar por fecha; los posts de ejemplo se
+// anclan a "hoy" relativo para que "Hoy"/"Ayer" siga siendo coherente
+// sin importar qué día se abra la demo.
+function daysAgoAt(days, hour, min) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  d.setHours(hour, min, 0, 0);
+  return d.getTime();
+}
+
 const SAMPLE_POSTS = [
   {
     id: 'post-1', author: 'María G.', authorId: 'u-1',
-    date: 'Hoy, 09:30', category: 'emocional', catLabel: 'Apoyo Emocional',
+    date: 'Hoy, 09:30', timestamp: daysAgoAt(0, 9, 30), category: 'emocional', catLabel: 'Apoyo Emocional',
     title: 'Días difíciles con el descanso nocturno',
     content: 'Mi hijo Lucas (5 años, PCI) lleva una semana despierto casi todas las noches por espasmos. Me siento desbordada. ¿Alguien ha probado algún cambio de postura o rutina?',
     childMood: '😟 Mal', caregiverMood: '😢 Muy mal', energy: '3/10', likes: 12, userLiked: false,
@@ -507,7 +517,7 @@ const SAMPLE_POSTS = [
   },
   {
     id: 'post-2', author: 'Javier P.', authorId: 'u-2',
-    date: 'Ayer, 18:20', category: 'escolar', catLabel: 'Colegio / Educación',
+    date: 'Ayer, 18:20', timestamp: daysAgoAt(1, 18, 20), category: 'escolar', catLabel: 'Colegio / Educación',
     title: '¡Gran avance en el colegio de integración!',
     content: 'Hoy hemos tenido la reunión trimestral con orientación escolar. Han adaptado los materiales y nuestro Mateo está súper motivado.',
     childMood: '😄 Muy bien', caregiverMood: '🙂 Bien', energy: '8/10', likes: 24, userLiked: false,
@@ -517,7 +527,7 @@ const SAMPLE_POSTS = [
   },
   {
     id: 'post-3', author: 'Carmen L.', authorId: 'u-1',
-    date: '23 Jul, 14:10', category: 'medico', catLabel: 'Salud y Terapias',
+    date: '23 Jul, 14:10', timestamp: daysAgoAt(4, 14, 10), category: 'medico', catLabel: 'Salud y Terapias',
     title: 'Dudas sobre trámites de la dependencia',
     content: 'Llevamos 8 meses esperando la resolución del grado de dependencia. ¿Sabéis si hay canal para consultar el estado del expediente sin ir presencialmente?',
     childMood: '😐 Regular', caregiverMood: '😐 Regular', energy: '5/10', likes: 7, userLiked: false,
@@ -537,19 +547,44 @@ function getStoredPosts() {
 }
 function savePosts(posts) { _postsCache = posts; localStorage.setItem('cuidapp_forum_posts', JSON.stringify(posts)); }
 
+// Mantiene el selector de "personas" con las autoras/es realmente presentes
+// en el foro, preservando la selección actual si sigue siendo válida.
+function populateForumAuthorFilter(posts) {
+  const select = document.getElementById('forumAuthorFilter');
+  if (!select) return;
+  const current = select.value;
+  const authors = [...new Set(posts.map(p => p.author))].sort((a, b) => a.localeCompare(b, 'es'));
+  select.innerHTML = '<option value="all">Todas las personas</option>' +
+    authors.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+  if (authors.includes(current)) select.value = current;
+}
+
 function renderForum() {
   const posts    = getStoredPosts();
   const users    = getUsers();
   const cu       = getCurrentUser();
   const search   = (document.getElementById('forumSearchInput')?.value || '').toLowerCase();
   const cat      = document.getElementById('forumCategoryFilter')?.value || 'all';
+  const author   = document.getElementById('forumAuthorFilter')?.value || 'all';
+  const dateFrom = document.getElementById('forumDateFrom')?.value || '';
+  const dateTo   = document.getElementById('forumDateTo')?.value || '';
 
-  const filtered = posts.filter(p => {
+  const visiblePosts = posts.filter(p => {
     const authorUser = users.find(u => u.id === p.authorId || u.name === p.author);
-    if (authorUser && authorUser.banned) return false;
+    return !(authorUser && authorUser.banned);
+  });
+  populateForumAuthorFilter(visiblePosts);
+
+  const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
+  const toTs   = dateTo   ? new Date(dateTo + 'T23:59:59').getTime()   : null;
+
+  const filtered = visiblePosts.filter(p => {
     const matchSearch = p.title.toLowerCase().includes(search) || p.content.toLowerCase().includes(search) || p.author.toLowerCase().includes(search);
-    const matchCat = cat === 'all' || p.category === cat;
-    return matchSearch && matchCat;
+    const matchCat    = cat === 'all' || p.category === cat;
+    const matchAuthor = author === 'all' || p.author === author;
+    const matchFrom   = fromTs === null || (p.timestamp || 0) >= fromTs;
+    const matchTo     = toTs === null || (p.timestamp || 0) <= toTs;
+    return matchSearch && matchCat && matchAuthor && matchFrom && matchTo;
   });
 
   const listEl = document.getElementById('forumList');
@@ -796,6 +831,22 @@ document.getElementById('panelPostOverlay').addEventListener('click', () => clos
 
 document.getElementById('forumSearchInput')?.addEventListener('input', renderForum);
 document.getElementById('forumCategoryFilter')?.addEventListener('change', renderForum);
+document.getElementById('forumAuthorFilter')?.addEventListener('change', renderForum);
+document.getElementById('forumDateFrom')?.addEventListener('change', renderForum);
+document.getElementById('forumDateTo')?.addEventListener('change', renderForum);
+document.getElementById('btnClearForumFilters')?.addEventListener('click', () => {
+  const searchEl = document.getElementById('forumSearchInput');
+  const catEl    = document.getElementById('forumCategoryFilter');
+  const authorEl = document.getElementById('forumAuthorFilter');
+  const fromEl   = document.getElementById('forumDateFrom');
+  const toEl     = document.getElementById('forumDateTo');
+  if (searchEl) searchEl.value = '';
+  if (catEl) catEl.value = 'all';
+  if (authorEl) authorEl.value = 'all';
+  if (fromEl) fromEl.value = '';
+  if (toEl) toEl.value = '';
+  renderForum();
+});
 document.getElementById('btnNuevaPublicacion')?.addEventListener('click', () => openRegistro(true));
 
 // =============================================
@@ -818,7 +869,7 @@ function syncForumPost(cu, previousForumPostId, wantsPublish, postData) {
     }
     const newPost = {
       id: 'post-' + Date.now(), author: cu.name, authorId: cu.id,
-      date: 'Ahora mismo', category: 'emocional', catLabel: 'Registro Diario',
+      date: 'Ahora mismo', timestamp: Date.now(), category: 'emocional', catLabel: 'Registro Diario',
       likes: 0, userLiked: false, comments: [], ...postData
     };
     posts.unshift(newPost);

@@ -441,14 +441,24 @@
           <input type="text" class="planner-input" id="forumSearchInput" placeholder="🔍 Buscar por palabras clave (ej. parálisis, colegio, sueño, medicación...)" />
         </div>
         <div class="forum-filter-wrap">
-          <select class="planner-select" id="forumCategoryFilter">
-            <option value="all">Todas las categorías</option>
+          <select class="planner-select" id="forumCategoryFilter" title="Filtrar por tema">
+            <option value="all">Todos los temas</option>
             <option value="rutina">Rutina y Cuidados</option>
             <option value="emocional">Apoyo Emocional / Desahogo</option>
             <option value="escolar">Colegio / Educación</option>
             <option value="medico">Salud y Terapias</option>
             <option value="logro">Logros y Alegrías</option>
           </select>
+          <select class="planner-select" id="forumAuthorFilter" title="Filtrar por persona">
+            <option value="all">Todas las personas</option>
+          </select>
+          <label class="forum-date-label">Desde
+            <input type="date" class="planner-input forum-date-input" id="forumDateFrom" title="Filtrar desde esta fecha" />
+          </label>
+          <label class="forum-date-label">Hasta
+            <input type="date" class="planner-input forum-date-input" id="forumDateTo" title="Filtrar hasta esta fecha" />
+          </label>
+          <button class="btn-secondary sm" id="btnClearForumFilters">✕ Limpiar filtros</button>
           <button class="btn-primary" id="btnNuevaPublicacion">+ Publicar mi Situación</button>
         </div>
       </div>
