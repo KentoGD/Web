@@ -752,16 +752,20 @@ document.getElementById('panelPostOverlay').addEventListener('click', () => clos
 
 document.getElementById('forumSearchInput')?.addEventListener('input', renderForum);
 document.getElementById('forumCategoryFilter')?.addEventListener('change', renderForum);
-document.getElementById('btnNuevaPublicacion')?.addEventListener('click', () => openRegistro());
+document.getElementById('btnNuevaPublicacion')?.addEventListener('click', () => openRegistro(true));
 
 // =============================================
 // REGISTRO DIARIO → PUBLICACIÓN EN FORO
 // =============================================
-function openRegistro() {
-  if (!getCurrentUser()) { showToast('Inicia sesión para publicar', 'info'); openAuthModal(); return; }
+function openRegistro(prefillPublicar) {
+  if (!getCurrentUser()) { showToast('Inicia sesión para registrar tu situación', 'info'); openAuthModal(); return; }
   const now = new Date();
   const regFecha = document.getElementById('regFecha');
   if (regFecha) regFecha.textContent = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  // Por defecto el registro es privado; solo viene premarcado para publicar
+  // cuando el usuario llegó desde el botón "Publicar mi Situación" del foro.
+  const publicarCheck = document.getElementById('regPublicarForo');
+  if (publicarCheck) publicarCheck.checked = !!prefillPublicar;
   openPanel('panelRegistro');
 }
 
@@ -781,21 +785,23 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   const caregiverMoodVal = caregiverOpt ? caregiverOpt.dataset.val : 'regular';
   const childMood        = childOpt     ? childOpt.title     : '🙂 Bien';
   const caregiverMood    = caregiverOpt ? caregiverOpt.title : '😐 Regular';
+  const publicarForo     = document.getElementById('regPublicarForo')?.checked || false;
 
-  // Registro estructurado por usuario: alimenta "Mi Trayectoria" y la
-  // detección de riesgo, independientemente de si se publica en el foro.
+  // Registro estructurado por usuario: siempre privado, alimenta "Mi
+  // Trayectoria" y la detección de riesgo. Publicarlo en el foro es una
+  // decisión explícita y aparte (checkbox desmarcado por defecto).
   const log = getSituacionLog();
   log.push({
     id: 'reg-' + Date.now(), userId: cu.id, userName: cu.name,
     timestamp: Date.now(), childMoodVal, caregiverMoodVal,
-    childMood, caregiverMood, energy: energyVal, notas: notas || ''
+    childMood, caregiverMood, energy: energyVal, notas: notas || '', publicadoEnForo: !!(notas && publicarForo)
   });
   saveSituacionLog(log);
 
   const risk = computeRiskForUser(cu.id);
   flagRiskCase(cu, risk.level);
 
-  if (notas) {
+  if (notas && publicarForo) {
     const posts = getStoredPosts();
     posts.unshift({
       id: 'post-' + Date.now(), author: cu.name, authorId: cu.id,
@@ -811,13 +817,13 @@ document.getElementById('saveRegBtn')?.addEventListener('click', () => {
   if (risk.level === 'grave') {
     showToast('💜 Detectamos varios días difíciles seguidos. Tu caso quedó marcado como prioritario para que nuestro equipo te contacte.', 'error', 7000);
   } else {
-    showToast('💾 Situación guardada' + (notas ? ' y publicada en el Foro' : ''), 'success');
+    showToast('💾 Situación guardada en privado' + (notas && publicarForo ? ' y publicada en el Foro' : ''), 'success');
   }
 
   renderMyTrayectoria();
   setTimeout(() => {
     closePanel('panelRegistro');
-    goToPage(PAGE_IDS.indexOf(notas ? 'foro' : 'situacion'));
+    goToPage(PAGE_IDS.indexOf(notas && publicarForo ? 'foro' : 'situacion'));
   }, 900);
 });
 
