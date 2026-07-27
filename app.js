@@ -448,9 +448,9 @@ function renderMyTrayectoria() {
           <div class="tray-history-item">
             <div class="tray-history-date">${new Date(r.timestamp).toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} · ${new Date(r.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
             <div class="tray-history-pills">
-              <span class="tray-history-pill">👶 ${escapeHtml(r.childMood)}</span>
-              <span class="tray-history-pill">🧠 ${escapeHtml(r.caregiverMood)}</span>
-              <span class="tray-history-pill">⚡ ${r.energy}/10</span>
+              <span class="tray-history-pill">👶 Niño/a: ${escapeHtml(r.childMood)}</span>
+              <span class="tray-history-pill">🧠 Cuidador/a: ${escapeHtml(r.caregiverMood)}</span>
+              <span class="tray-history-pill">⚡ Energía: ${r.energy}/10</span>
               ${r.publicadoEnForo ? '<span class="tray-history-pill tray-pill-public">🌍 Publicado en el foro</span>' : '<span class="tray-history-pill tray-pill-private">🔒 Privado</span>'}
             </div>
             ${(r.actividades && r.actividades.length) ? `<div class="tray-history-activities">✅ ${r.actividades.map(a => escapeHtml(a)).join(' · ')}</div>` : ''}
@@ -579,9 +579,9 @@ function renderForum() {
         <h3 class="forum-title">${escapeHtml(p.title)}</h3>
         <p class="forum-snippet">${escapeHtml(p.content)}</p>
         <div class="forum-mood-pills">
-          <span class="mood-pill">👶 ${escapeHtml(p.childMood || '🙂 Bien')}</span>
-          <span class="mood-pill">🧠 ${escapeHtml(p.caregiverMood || '😐 Regular')}</span>
-          <span class="mood-pill">⚡ ${escapeHtml(p.energy || '5/10')}</span>
+          <span class="mood-pill">👶 Niño/a: ${escapeHtml(p.childMood || '🙂 Bien')}</span>
+          <span class="mood-pill">🧠 Cuidador/a: ${escapeHtml(p.caregiverMood || '😐 Regular')}</span>
+          <span class="mood-pill">⚡ Energía: ${escapeHtml(p.energy || '5/10')}</span>
         </div>
       </div>
       <div class="forum-footer">

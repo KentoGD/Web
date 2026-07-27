@@ -84,7 +84,7 @@ body {
 .page-inner { flex: 1; }
 
 
-.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
