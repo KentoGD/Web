@@ -921,6 +921,21 @@ section { padding: 90px 0; }
 .training-btn   { background: linear-gradient(135deg, var(--gold), #D4891F); box-shadow: 0 6px 20px rgba(245,166,35,0.3); }
 .wellness-btn   { background: linear-gradient(135deg, var(--green), #1E7A52); box-shadow: 0 6px 20px rgba(45,158,107,0.3); }
 .res-btn:hover  { transform: translateY(-2px); filter: brightness(1.08); }
+.game-btn       { background: linear-gradient(135deg, var(--teal), var(--purple)); box-shadow: 0 6px 20px rgba(98,184,176,0.35); }
+.res-featured   { grid-column: 1 / -1; display: flex; align-items: center; gap: 24px; text-align: left;
+                  border-color: var(--teal-light); background: linear-gradient(135deg, var(--teal-pale), var(--purple-pale)); }
+.res-featured .res-icon-big { margin-bottom: 0; font-size: 3rem; }
+.res-featured-body { flex: 1; }
+.res-featured p { margin-bottom: 0; }
+.res-featured .res-btn { flex-shrink: 0; }
+.res-badges     { display: flex; gap: 6px; margin-bottom: 8px; }
+.res-badge      { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; text-transform: uppercase; letter-spacing: .04em; }
+.res-badge.new  { background: var(--purple); color: white; }
+.res-badge.free { background: var(--green); color: white; }
+@media (max-width: 700px) {
+  .res-featured { flex-direction: column; text-align: center; }
+  .res-badges   { justify-content: center; }
+}
 
 /* =============================================
    ALERTS
